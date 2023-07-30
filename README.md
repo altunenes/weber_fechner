@@ -1,6 +1,6 @@
 # weber_fechner
 
-A psychophysics experiment about Weber–Fechner law based on vision.
+A psychophysics experiment about Weber–Fechner law based on vision using `bevy` game engine.
 
 Currently, it is just a template for the experiment, and it is not ready for the real experiment.
 
