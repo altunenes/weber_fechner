@@ -28,7 +28,6 @@ fn refresh_ellipses(
         for entity in ellipses.iter() {
             commands.entity(entity).despawn();
         }
-
         // Re-setup the ellipses
         setup(commands, meshes, materials, experiment_state);
     }
