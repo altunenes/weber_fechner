@@ -2,17 +2,35 @@ use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
 use rand::{Rng, thread_rng, seq::SliceRandom};
 use bevy::input::keyboard::KeyboardInput;
 use rand::distributions::{Distribution, Uniform};
-
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .insert_resource(ExperimentState::default())
         .add_systems(Startup, setup)
-
+        .add_systems(Update, refresh_ellipses)
         .run();
 }
-// Components
-struct Dot;
+
+fn refresh_ellipses(
+    keys: Res<Input<KeyCode>>,
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+    mut experiment_state: ResMut<ExperimentState>,
+    ellipses: Query<Entity, With<Ellipse>>,
+) {
+    if keys.just_pressed(KeyCode::S) {
+        // Despawn the existing ellipses
+        for entity in ellipses.iter() {
+            commands.entity(entity).despawn();
+        }
+
+        // Re-setup the ellipses
+        setup(commands, meshes, materials, experiment_state);
+    }
+}
+#[derive(Component)]
+struct Ellipse;
 struct UserResponse(Option<bool>);
 
 // Resources
