@@ -1,55 +1,63 @@
 use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
-use rand::{Rng, thread_rng, seq::SliceRandom};
-use bevy::input::keyboard::KeyboardInput;
+use rand::{Rng, thread_rng};
 use rand::distributions::{Distribution, Uniform};
 use std::fs::OpenOptions;
 use std::io::Write;
 use std::process;
+use std::time::Instant;
 fn main() {
     App::new()
 
         .add_plugins(DefaultPlugins)
         .insert_resource(ExperimentState::default())
+        .insert_resource(TrialState::default()) 
         .add_systems(Startup, setup_camera)
         .add_systems(Startup, setup)
         .add_systems(Update, refresh_ellipses)
         .add_systems(Update, update_user_responses)
         .run();
 }
-
-
-
 fn setup_camera(mut commands: Commands) {
     commands.spawn(Camera2dBundle::default());
 }
 fn refresh_ellipses(
     keys: Res<Input<KeyCode>>,
     mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
-    mut experiment_state: ResMut<ExperimentState>,
+    meshes: ResMut<Assets<Mesh>>,
+    materials: ResMut<Assets<ColorMaterial>>,
+    experiment_state: ResMut<ExperimentState>,
+    mut trial_state: ResMut<TrialState>,
     ellipses: Query<Entity, With<Ellipse>>,
 ) {
     if !experiment_state.complete && (keys.just_pressed(KeyCode::S) || keys.just_pressed(KeyCode::D)) {
-        // Despawn the existing ellipses
         for entity in ellipses.iter() {
             commands.entity(entity).despawn();
         }
-        // Re-setup the ellipses
+        trial_state.start_time = Instant::now();
+
         setup(commands, meshes, materials, experiment_state);
+    }
+}
+#[derive(Resource)]
+struct TrialState {
+    start_time: Instant,
+}
+impl Default for TrialState {
+    fn default() -> Self {
+        TrialState {
+            start_time: Instant::now(),
+        }
     }
 }
 #[derive(Component)]
 struct Ellipse;
-struct UserResponse(Option<bool>);
 #[derive(Default, Resource)]
 struct ExperimentState {
-    final_result: Vec<(usize, usize, bool)>, // true for correct, false for incorrect S is same, D is not same 
+    final_result: Vec<(usize, usize, bool, f32)>, // true for correct, false for incorrect S is same, D is not same 
     num_ellipses_left: usize,
     num_ellipses_right: usize,
     num_trials: usize, 
     complete: bool,
-
 }
 fn setup(
     mut commands: Commands,
@@ -88,33 +96,32 @@ fn setup(
 fn update_user_responses(
     keys: Res<Input<KeyCode>>,
     mut experiment_state: ResMut<ExperimentState>,
+    trial_state: Res<TrialState>,
+
 ) {
     if keys.just_pressed(KeyCode::S) {
         let num_left = experiment_state.num_ellipses_left;
         let num_right = experiment_state.num_ellipses_right;
-
+        let elapsed = trial_state.start_time.elapsed().as_secs_f32();
         if num_left == num_right {
-            experiment_state.final_result.push((num_left, num_right, true));
+            experiment_state.final_result.push((num_left, num_right, true,elapsed));
         } else {
-            experiment_state.final_result.push((num_left, num_right, false));
+            experiment_state.final_result.push((num_left, num_right, false,elapsed));
         }
-
         experiment_state.num_trials += 1;
         if experiment_state.num_trials == 20 {
             print_final_results(&experiment_state.final_result);
         }
     }
-
     if keys.just_pressed(KeyCode::D) {
         let num_left = experiment_state.num_ellipses_left;
         let num_right = experiment_state.num_ellipses_right;
-
+        let elapsed = trial_state.start_time.elapsed().as_secs_f32();
         if num_left != num_right {
-            experiment_state.final_result.push((num_left, num_right, true));
+            experiment_state.final_result.push((num_left, num_right, true,elapsed));
         } else {
-            experiment_state.final_result.push((num_left, num_right, false));
+            experiment_state.final_result.push((num_left, num_right, false,elapsed));
         }
-
         experiment_state.num_trials += 1;
         if experiment_state.num_trials == 20 {
             print_final_results(&experiment_state.final_result);
@@ -124,27 +131,28 @@ fn update_user_responses(
         print_final_results(&experiment_state.final_result);
         experiment_state.complete = true;
     }
-
 }
-fn print_final_results(final_results: &Vec<(usize, usize, bool)>) {
+fn print_final_results(final_results: &Vec<(usize, usize, bool, f32)>) {
     println!("---Final Results---");
-    let mut csv_data = String::from("Trial,Num_Left,Num_Right,Result\n");
+    let mut csv_data = String::from("Trial,Num_Left,Num_Right,Result,Response_Time\n");
     let mut correct_count = 0;
-    for (trial, (num_left, num_right, is_correct)) in final_results.iter().enumerate() {
+    for (trial, (num_left, num_right, is_correct, response_time)) in final_results.iter().enumerate() {
         let correctness = if *is_correct {
             correct_count += 1;
             "Correct"
         } else {
             "Incorrect"
         };
-        println!("Trial {}: Left = {}, Right = {}, Result = {}", trial+1, num_left, num_right, correctness);
-        csv_data += &format!("{},{},{},{}\n", trial+1, num_left, num_right, correctness);
+        println!("Trial {}: Left = {}, Right = {}, Result = {}, Response Time = {}", trial+1, num_left, num_right, correctness, response_time);
+        csv_data += &format!("{},{},{},{},{}\n", trial+1, num_left, num_right, correctness, response_time);
     }
-    // Calculate mean accuracy
     let mean_accuracy: f32 = correct_count as f32 / final_results.len() as f32;
+    let mean_correct_rt: f32 = final_results.iter().filter(|(_, _, is_correct, _)| *is_correct).map(|(_, _, _, response_time)| response_time).sum::<f32>() / correct_count as f32;
     println!("Mean Accuracy: {}", mean_accuracy);
     csv_data += &format!("\nMean Accuracy: {}\n", mean_accuracy);
-    let file_name = format!("participant_{}.csv", 1); // change 1 with participant number
+    println!("Mean Correct Response Time: {}", mean_correct_rt);
+    csv_data += &format!("Mean Correct Response Time: {}\n", mean_correct_rt);
+    let file_name = format!("participant_{}.csv", 2); // change 1 with participant number
     let mut file = OpenOptions::new()
         .write(true)
         .create(true)
