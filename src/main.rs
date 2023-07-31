@@ -38,9 +38,11 @@ struct Ellipse;
 struct UserResponse(Option<bool>);
 #[derive(Default, Resource)]
 struct ExperimentState {
-    final_result: Vec<(usize, usize, bool)>, // true for correct, false for incorrect
+    final_result: Vec<(usize, usize, bool)>, // true for correct, false for incorrect S is same, D is not same 
     num_ellipses_left: usize,
     num_ellipses_right: usize,
+    num_trials: usize, 
+
 }
 fn setup(
     mut commands: Commands,
@@ -53,8 +55,8 @@ fn setup(
     let y_range = Uniform::new(-200.0, 200.0);
     let x_2= 450.0;
     let y_range_2 = Uniform::new(-200.0, 200.0);
-    let num_ellipses_1 = rng.gen_range(10..40);
-    let num_ellipses_2 = rng.gen_range(40..80);
+    let num_ellipses_1 = rng.gen_range(1..2);
+    let num_ellipses_2 = rng.gen_range(1..2);
     experiment_state.num_ellipses_left = num_ellipses_1;
     experiment_state.num_ellipses_right = num_ellipses_2;
     for i in 0..num_ellipses_1 {
@@ -89,7 +91,13 @@ fn update_user_responses(
         } else {
             experiment_state.final_result.push((num_left, num_right, false));
         }
+
+        experiment_state.num_trials += 1;
+        if experiment_state.num_trials == 20 {
+            print_final_results(&experiment_state.final_result);
+        }
     }
+
     if keys.just_pressed(KeyCode::D) {
         let num_left = experiment_state.num_ellipses_left;
         let num_right = experiment_state.num_ellipses_right;
@@ -99,5 +107,17 @@ fn update_user_responses(
         } else {
             experiment_state.final_result.push((num_left, num_right, false));
         }
+
+        experiment_state.num_trials += 1;
+        if experiment_state.num_trials == 20 {
+            print_final_results(&experiment_state.final_result);
+        }
+    }
+}
+fn print_final_results(final_results: &Vec<(usize, usize, bool)>) {
+    println!("---Final Results---");
+    for (trial, (num_left, num_right, is_correct)) in final_results.iter().enumerate() {
+        let correctness = if *is_correct {"Correct"} else {"Incorrect"};
+        println!("Trial {}: Left = {}, Right = {}, Result = {}", trial+1, num_left, num_right, correctness);
     }
 }
