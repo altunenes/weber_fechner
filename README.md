@@ -1,3 +1,5 @@
+[![Rust](https://github.com/altunenes/weber_fechner/actions/workflows/rust.yml/badge.svg)](https://github.com/altunenes/weber_fechner/actions/workflows/rust.yml)
+
 # weber_fechner
 
 A psychophysics experiment about Weber–Fechner law based on vision using `bevy` game engine.
