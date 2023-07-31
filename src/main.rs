@@ -62,8 +62,8 @@ fn setup(
     let y_range = Uniform::new(-200.0, 200.0);
     let x_2= 450.0;
     let y_range_2 = Uniform::new(-200.0, 200.0);
-    let num_ellipses_1 = rng.gen_range(1..2);
-    let num_ellipses_2 = rng.gen_range(1..2);
+    let num_ellipses_1 = rng.gen_range(1..5);
+    let num_ellipses_2 = rng.gen_range(1..5);
     experiment_state.num_ellipses_left = num_ellipses_1;
     experiment_state.num_ellipses_right = num_ellipses_2;
     for i in 0..num_ellipses_1 {
@@ -140,7 +140,10 @@ fn print_final_results(final_results: &Vec<(usize, usize, bool)>) {
         println!("Trial {}: Left = {}, Right = {}, Result = {}", trial+1, num_left, num_right, correctness);
         csv_data += &format!("{},{},{},{}\n", trial+1, num_left, num_right, correctness);
     }
-
+    // Calculate mean accuracy
+    let mean_accuracy: f32 = correct_count as f32 / final_results.len() as f32;
+    println!("Mean Accuracy: {}", mean_accuracy);
+    csv_data += &format!("\nMean Accuracy: {}\n", mean_accuracy);
     let file_name = format!("participant_{}.csv", 1); // change 1 with participant number
     let mut file = OpenOptions::new()
         .write(true)
@@ -149,11 +152,5 @@ fn print_final_results(final_results: &Vec<(usize, usize, bool)>) {
         .unwrap();
     file.write_all(csv_data.as_bytes()).unwrap();
     println!("Data saved to {}", &file_name);
-
-    // Print mean accuracy
-    let mean_accuracy: f32 = correct_count as f32 / final_results.len() as f32;
-    println!("Mean Accuracy: {}", mean_accuracy);
-
-    // Exit the program
     process::exit(0);
 }
