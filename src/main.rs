@@ -2,8 +2,12 @@ use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
 use rand::{Rng, thread_rng, seq::SliceRandom};
 use bevy::input::keyboard::KeyboardInput;
 use rand::distributions::{Distribution, Uniform};
+use std::fs::OpenOptions;
+use std::io::Write;
+use std::process;
 fn main() {
     App::new()
+
         .add_plugins(DefaultPlugins)
         .insert_resource(ExperimentState::default())
         .add_systems(Startup, setup_camera)
@@ -12,6 +16,8 @@ fn main() {
         .add_systems(Update, update_user_responses)
         .run();
 }
+
+
 
 fn setup_camera(mut commands: Commands) {
     commands.spawn(Camera2dBundle::default());
@@ -24,7 +30,7 @@ fn refresh_ellipses(
     mut experiment_state: ResMut<ExperimentState>,
     ellipses: Query<Entity, With<Ellipse>>,
 ) {
-    if keys.just_pressed(KeyCode::S) || keys.just_pressed(KeyCode::D) {
+    if !experiment_state.complete && (keys.just_pressed(KeyCode::S) || keys.just_pressed(KeyCode::D)) {
         // Despawn the existing ellipses
         for entity in ellipses.iter() {
             commands.entity(entity).despawn();
@@ -42,6 +48,7 @@ struct ExperimentState {
     num_ellipses_left: usize,
     num_ellipses_right: usize,
     num_trials: usize, 
+    complete: bool,
 
 }
 fn setup(
@@ -113,11 +120,40 @@ fn update_user_responses(
             print_final_results(&experiment_state.final_result);
         }
     }
+    if experiment_state.num_trials == 20 {
+        print_final_results(&experiment_state.final_result);
+        experiment_state.complete = true;
+    }
+
 }
 fn print_final_results(final_results: &Vec<(usize, usize, bool)>) {
     println!("---Final Results---");
+    let mut csv_data = String::from("Trial,Num_Left,Num_Right,Result\n");
+    let mut correct_count = 0;
     for (trial, (num_left, num_right, is_correct)) in final_results.iter().enumerate() {
-        let correctness = if *is_correct {"Correct"} else {"Incorrect"};
+        let correctness = if *is_correct {
+            correct_count += 1;
+            "Correct"
+        } else {
+            "Incorrect"
+        };
         println!("Trial {}: Left = {}, Right = {}, Result = {}", trial+1, num_left, num_right, correctness);
+        csv_data += &format!("{},{},{},{}\n", trial+1, num_left, num_right, correctness);
     }
+
+    let file_name = format!("participant_{}.csv", 1); // change 1 with participant number
+    let mut file = OpenOptions::new()
+        .write(true)
+        .create(true)
+        .open(&file_name)
+        .unwrap();
+    file.write_all(csv_data.as_bytes()).unwrap();
+    println!("Data saved to {}", &file_name);
+
+    // Print mean accuracy
+    let mean_accuracy: f32 = correct_count as f32 / final_results.len() as f32;
+    println!("Mean Accuracy: {}", mean_accuracy);
+
+    // Exit the program
+    process::exit(0);
 }
