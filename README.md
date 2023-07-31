@@ -11,5 +11,5 @@ Currently, it is just a template for the experiment, and it is not ready for the
 - [x] Basic experiment template using `bevy`.
 - [x] Show the stimulus and change the frames based on the keyboard input.
 - [x] Track the keyboard inputs, Response time, and the correctness of the response.
-- [ ] Collect the data and save it to a file.
+- [x] Collect the data and save it to a file.
 - [ ] Add a small GUI to control the experiment.
