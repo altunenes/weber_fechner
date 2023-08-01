@@ -29,7 +29,7 @@ fn refresh_ellipses(
     mut trial_state: ResMut<TrialState>,
     ellipses: Query<Entity, With<Ellipse>>,
 ) {
-    if !experiment_state.complete && (keys.just_pressed(KeyCode::S) || keys.just_pressed(KeyCode::D)) {
+    if !experiment_state.complete && (keys.just_pressed(KeyCode::Key1) || keys.just_pressed(KeyCode::Key0) || keys.just_pressed(KeyCode::Space)) {
         for entity in ellipses.iter() {
             commands.entity(entity).despawn();
         }
@@ -53,7 +53,7 @@ impl Default for TrialState {
 struct Ellipse;
 #[derive(Default, Resource)]
 struct ExperimentState {
-    final_result: Vec<(usize, usize, bool, f32)>, // true for correct, false for incorrect S is same, D is not same 
+    final_result: Vec<(usize, usize, String, f32)>, // true for correct, false for incorrect S is same, D is not same 
     num_ellipses_left: usize,
     num_ellipses_right: usize,
     num_trials: usize, 
@@ -70,8 +70,8 @@ fn setup(
     let y_range = Uniform::new(-200.0, 200.0);
     let x_2= 450.0;
     let y_range_2 = Uniform::new(-200.0, 200.0);
-    let num_ellipses_1 = rng.gen_range(1..5);
-    let num_ellipses_2 = rng.gen_range(1..5);
+    let num_ellipses_1 = rng.gen_range(1..4);
+    let num_ellipses_2 = rng.gen_range(1..4);
     experiment_state.num_ellipses_left = num_ellipses_1;
     experiment_state.num_ellipses_right = num_ellipses_2;
     for i in 0..num_ellipses_1 {
@@ -93,61 +93,79 @@ fn setup(
         }).insert(Ellipse);
     }
 }
+
 fn update_user_responses(
     keys: Res<Input<KeyCode>>,
     mut experiment_state: ResMut<ExperimentState>,
     trial_state: Res<TrialState>,
-
 ) {
-    if keys.just_pressed(KeyCode::S) {
+    if keys.just_pressed(KeyCode::Key1) {
+        let num_left = experiment_state.num_ellipses_left;
+        let num_right = experiment_state.num_ellipses_right;
+        let elapsed = trial_state.start_time.elapsed().as_secs_f32();
+        if num_left > num_right {
+            experiment_state.final_result.push((num_left, num_right, "Correct".to_string(), elapsed));
+        } else {
+            experiment_state.final_result.push((num_left, num_right, "Incorrect".to_string(), elapsed));
+        }
+        experiment_state.num_trials += 1;
+        if experiment_state.num_trials == 5 {
+            print_final_results(&experiment_state.final_result);
+        }
+    }
+
+    if keys.just_pressed(KeyCode::Key0) {
+        let num_left = experiment_state.num_ellipses_left;
+        let num_right = experiment_state.num_ellipses_right;
+        let elapsed = trial_state.start_time.elapsed().as_secs_f32();
+        if num_left < num_right {
+            experiment_state.final_result.push((num_left, num_right, "Correct".to_string(), elapsed));
+        } else {
+            experiment_state.final_result.push((num_left, num_right, "Incorrect".to_string(), elapsed));
+        }
+        experiment_state.num_trials += 1;
+        if experiment_state.num_trials == 5 {
+            print_final_results(&experiment_state.final_result);
+        }
+    }
+
+    if keys.just_pressed(KeyCode::Space) {
         let num_left = experiment_state.num_ellipses_left;
         let num_right = experiment_state.num_ellipses_right;
         let elapsed = trial_state.start_time.elapsed().as_secs_f32();
         if num_left == num_right {
-            experiment_state.final_result.push((num_left, num_right, true,elapsed));
+            experiment_state.final_result.push((num_left, num_right, "Correct".to_string(), elapsed));
         } else {
-            experiment_state.final_result.push((num_left, num_right, false,elapsed));
+            experiment_state.final_result.push((num_left, num_right, "Incorrect".to_string(), elapsed));
         }
         experiment_state.num_trials += 1;
-        if experiment_state.num_trials == 20 {
+        if experiment_state.num_trials == 5 {
             print_final_results(&experiment_state.final_result);
         }
     }
-    if keys.just_pressed(KeyCode::D) {
-        let num_left = experiment_state.num_ellipses_left;
-        let num_right = experiment_state.num_ellipses_right;
-        let elapsed = trial_state.start_time.elapsed().as_secs_f32();
-        if num_left != num_right {
-            experiment_state.final_result.push((num_left, num_right, true,elapsed));
-        } else {
-            experiment_state.final_result.push((num_left, num_right, false,elapsed));
-        }
-        experiment_state.num_trials += 1;
-        if experiment_state.num_trials == 20 {
-            print_final_results(&experiment_state.final_result);
-        }
-    }
-    if experiment_state.num_trials == 20 {
+
+    if experiment_state.num_trials == 5 {
         print_final_results(&experiment_state.final_result);
         experiment_state.complete = true;
     }
 }
-fn print_final_results(final_results: &Vec<(usize, usize, bool, f32)>) {
+fn print_final_results(final_results: &Vec<(usize, usize, String, f32)>) {
     println!("---Final Results---");
     let mut csv_data = String::from("Trial,Num_Left,Num_Right,Result,Response_Time\n");
     let mut correct_count = 0;
-    for (trial, (num_left, num_right, is_correct, response_time)) in final_results.iter().enumerate() {
-        let correctness = if *is_correct {
+    for (trial, (num_left, num_right, result, response_time)) in final_results.iter().enumerate() {
+        if result == "Correct" {
             correct_count += 1;
-            "Correct"
-        } else {
-            "Incorrect"
-        };
-        println!("Trial {}: Left = {}, Right = {}, Result = {}, Response Time = {}", trial+1, num_left, num_right, correctness, response_time);
-        csv_data += &format!("{},{},{},{},{}\n", trial+1, num_left, num_right, correctness, response_time);
+        }
+        println!("Trial {}: Left = {}, Right = {}, Result = {}, Response Time = {}", trial+1, num_left, num_right, result, response_time);
+        csv_data += &format!("{},{},{},{},{}\n", trial+1, num_left, num_right, result, response_time);
     }
     let mean_accuracy: f32 = correct_count as f32 / final_results.len() as f32;
-    let mean_correct_rt: f32 = final_results.iter().filter(|(_, _, is_correct, _)| *is_correct).map(|(_, _, _, response_time)| response_time).sum::<f32>() / correct_count as f32;
+    let mean_correct_rt: f32 = final_results
+    .iter()
+    .filter(|(_, _, is_correct, _)| is_correct == "Correct") // This should match whatever String you use for correct responses
+    .map(|(_, _, _, response_time)| response_time)
+    .sum::<f32>() / final_results.len() as f32;
     println!("Mean Accuracy: {}", mean_accuracy);
     csv_data += &format!("\nMean Accuracy: {}\n", mean_accuracy);
     println!("Mean Correct Response Time: {}", mean_correct_rt);
