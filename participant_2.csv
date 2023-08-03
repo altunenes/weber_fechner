@@ -1,0 +1,10 @@
+Trial,Num_Left,Num_Right,Result,Response_Time
+1,2,2,Correct,6.8228188
+2,3,2,Incorrect,0.5265063
+3,3,3,Correct,0.3165224
+4,1,1,Correct,0.1966615
+5,1,1,Correct,0.2637946
+
+Mean Accuracy: 0.8
+Mean Correct Response Time: 1.5199594
+007052

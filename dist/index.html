@@ -1,0 +1,48 @@
+<!DOCTYPE html><html lang="en"><head>
+    <title>Experiment</title>
+    <style>
+        html,
+        body {
+            margin: 0;
+            height: 100%;
+        }
+    </style>
+
+<link rel="preload" href="/weber_fechner-63545f047726ef2b_bg.wasm" as="fetch" type="application/wasm" crossorigin="">
+<link rel="modulepreload" href="/weber_fechner-63545f047726ef2b.js"></head>
+
+<body style="margin: 0 !important; padding: 0 !important;">
+    <script type="module">
+        import init from './weber_fechner-63545f047726ef2b.js'
+        init()
+    </script>
+
+
+<script type="module">import init from '/weber_fechner-63545f047726ef2b.js';init('/weber_fechner-63545f047726ef2b_bg.wasm');</script><script>(function () {
+    var protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    var url = protocol + '//' + window.location.host + '/_trunk/ws';
+    var poll_interval = 5000;
+    var reload_upon_connect = () => {
+        window.setTimeout(
+            () => {
+                // when we successfully reconnect, we'll force a
+                // reload (since we presumably lost connection to
+                // trunk due to it being killed, so it will have
+                // rebuilt on restart)
+                var ws = new WebSocket(url);
+                ws.onopen = () => window.location.reload();
+                ws.onclose = reload_upon_connect;
+            },
+            poll_interval);
+    };
+
+    var ws = new WebSocket(url);
+    ws.onmessage = (ev) => {
+        const msg = JSON.parse(ev.data);
+        if (msg.reload) {
+            window.location.reload();
+        }
+    };
+    ws.onclose = reload_upon_connect;
+})()
+</script></body></html>
