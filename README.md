@@ -13,4 +13,22 @@ Currently, it is just a template for the experiment, and it is not ready for the
 - [x] Track the keyboard inputs, Response time, and the correctness of the response.
 - [x] Collect the data and save it to a file (Response times, accuracy, and the stimulus parameters etc).
 - [ ] Add web support via wasm (work in progress)
-- [ ] Add a small GUI to control the experiment.
+- [ ] Add a menu to change the parameters of the experiment, give instructions, and start the experiment etc.
+
+## Future Work
+- This template can be used for other psychophysics experiments since it is very generic. Faces, objects, gabors and other stimuli can be used instead of the ellipses. Bevy is a very powerful game engine and it can be used for other experiments as well. And it can be work on the any platform that supports Rust including mobile devices. 
+
+After all isn't all psychology experiments are just a game? :)
+
+## How to run
+As I mentioned before, this is just a template and it is not ready for the serious use. But if you want to try it, you can run it with the following command:
+
+```rust
+cargo run --release
+```
+that's it!
+
+## How to use
+
+- If you see more ellipses on the left, press the "1". If you see more ellipses on the right side, "0" if you perceive them as equal, press "space".
+If you want to conduct a serious experiment and you are in a hurry don't hesitate to contact me. I will be happy to help you. :)
