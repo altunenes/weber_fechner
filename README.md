@@ -12,7 +12,8 @@ Currently, it is just a template for the experiment, and it is not ready for the
 - [x] Show the stimulus and change the frames based on the keyboard input.
 - [x] Track the keyboard inputs, Response time, and the correctness of the response.
 - [x] Collect the data and save it to a file (Response times, accuracy, and the stimulus parameters etc).
-- [ ] Add web support via wasm (work in progress)
+- [x] Add web support via wasm 
+- [ ] Add saving the data for the web version (currently it is not possible to save the data in the web version). 
 - [ ] Add a menu to change the parameters of the experiment, give instructions, and start the experiment etc.
 
 ## Future Work
