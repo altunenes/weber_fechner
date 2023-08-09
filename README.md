@@ -8,8 +8,7 @@ Currently, it is just a template for the experiment, and it is not ready for the
 
 ## WASM Support
 
-It has also web support via wasm, but it is not possible to save the data in the web version. I am working on it. 
-You can try the web version [here](https://altunenes.github.io/weber_fechner/).
+Currently, it is possible to run the experiment on the web. You can try it [here](https://altunenes.github.io/weber_fechner/). But it is kust a template and it is not ready for the serious use. 
 
 ## Roadmap
 
