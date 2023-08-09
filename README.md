@@ -6,6 +6,11 @@ A psychophysics experiment about Weber–Fechner law based on vision using `bevy
 
 Currently, it is just a template for the experiment, and it is not ready for the serious use.
 
+## WASM Support
+
+It has also web support via wasm, but it is not possible to save the data in the web version. I am working on it. 
+You can try the web version [here](https://altunenes.github.io/weber_fechner/).
+
 ## Roadmap
 
 - [x] Basic experiment template using `bevy`.
@@ -15,6 +20,7 @@ Currently, it is just a template for the experiment, and it is not ready for the
 - [x] Add web support via wasm 
 - [ ] Add saving the data for the web version (currently it is not possible to save the data in the web version). 
 - [ ] Add a menu to change the parameters of the experiment, give instructions, and start the experiment etc.
+- [ ] Reorganize the code, split it into modules, and make it more readable (this will be last step after the experiment is ready for the serious use)
 
 ## Future Work
 - This template can be used for other psychophysics experiments since it is very generic. Faces, objects, gabors and other stimuli can be used instead of the ellipses. Bevy is a very powerful game engine and it can be used for other experiments as well. And it can be work on the any platform that supports Rust including mobile devices. 
