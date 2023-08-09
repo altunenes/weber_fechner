@@ -3295,6 +3295,7 @@ name = "weber_fechner"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "instant",
  "rand",
  "serde",
 ]

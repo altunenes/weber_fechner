@@ -4,7 +4,7 @@ use rand::distributions::{Distribution, Uniform};
 use std::fs::OpenOptions;
 use std::io::Write;
 use std::process;
-use std::time::Instant;
+use instant::Instant;
 fn main() {
     App::new()
 
