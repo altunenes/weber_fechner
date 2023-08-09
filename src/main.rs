@@ -176,12 +176,37 @@ fn print_final_results(final_results: &Vec<(usize, usize, String, f32)>) {
     println!("Mean Correct Response Time: {}", mean_correct_rt);
     csv_data += &format!("Mean Correct Response Time: {}\n", mean_correct_rt);
     let file_name = format!("participant_{}.csv", 2); // change 1 with participant number
-    let mut file = OpenOptions::new()
-        .write(true)
-        .create(true)
-        .open(&file_name)
-        .unwrap();
-    file.write_all(csv_data.as_bytes()).unwrap();
-    println!("Data saved to {}", &file_name);
+
+    #[cfg(target_arch = "wasm32")]
+    {
+        use wasm_bindgen::JsValue;
+        use wasm_bindgen::JsCast;
+        use web_sys::{Blob, Url, HtmlAnchorElement};
+        let csv_array = js_sys::Array::new();
+        csv_array.push(&JsValue::from_str(&csv_data));
+        let blob = Blob::new_with_str_sequence(&csv_array).unwrap();
+        
+        let url = Url::create_object_url_with_blob(&blob).unwrap();
+        let document = web_sys::window().unwrap().document().unwrap();
+        let a: HtmlAnchorElement = document.create_element("a").unwrap().dyn_into().unwrap();
+        a.set_href(&url);
+        a.set_download(&file_name);
+        a.style().set_property("display", "none").unwrap();
+        document.body().unwrap().append_child(&a).unwrap();
+        a.click();
+        document.body().unwrap().remove_child(&a).unwrap();
+        Url::revoke_object_url(&url).unwrap();
+    }
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        let mut file = OpenOptions::new()
+            .write(true)
+            .create(true)
+            .open(&file_name)
+            .unwrap();
+        file.write_all(csv_data.as_bytes()).unwrap();
+        println!("Data saved to {}", &file_name);
+    }
+
     process::exit(0);
 }

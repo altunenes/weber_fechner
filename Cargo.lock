@@ -3296,8 +3296,11 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "instant",
+ "js-sys",
  "rand",
  "serde",
+ "wasm-bindgen",
+ "web-sys",
 ]
 
 [[package]]
