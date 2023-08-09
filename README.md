@@ -18,7 +18,7 @@ You can try the web version [here](https://altunenes.github.io/weber_fechner/).
 - [x] Track the keyboard inputs, Response time, and the correctness of the response.
 - [x] Collect the data and save it to a file (Response times, accuracy, and the stimulus parameters etc).
 - [x] Add web support via wasm 
-- [ ] Add saving the data for the web version (currently it is not possible to save the data in the web version). 
+- [x] Add saving the data for the web version (currently it is not possible to save the data in the web version). 
 - [ ] Add a menu to change the parameters of the experiment, give instructions, and start the experiment etc.
 - [ ] Reorganize the code, split it into modules, and make it more readable (this will be last step after the experiment is ready for the serious use)
 
