@@ -7,26 +7,31 @@ use std::process;
 use instant::Instant;
 fn main() {
     App::new()
-
-    .add_plugins(DefaultPlugins.set(WindowPlugin {
-        primary_window: Some(Window {
-            fit_canvas_to_parent: true,
+        .add_plugins(DefaultPlugins.set(WindowPlugin {
+            primary_window: Some(Window {
+                fit_canvas_to_parent: true,
+                ..default()
+            }), 
             ..default()
-        }),
-        ..default()
-    }))
-    .insert_resource(ExperimentState::default())
+        }))
+        .insert_resource(AppState::Instruction)
+        .insert_resource(ExperimentState::default())
         .insert_resource(TrialState::default()) 
         .add_systems(Startup, setup_camera)
-        .add_systems(Startup, setup)
+        .add_systems(Update, start_experiment_system)
         .add_systems(Update, refresh_ellipses)
         .add_systems(Update, update_user_responses)
+        .add_systems(Update, display_instruction_system)
+        .add_systems(Update, update_background_color_system)
+
+
         .run();
 }
 fn setup_camera(mut commands: Commands) {
     commands.spawn(Camera2dBundle::default());
 }
 fn refresh_ellipses(
+    app_state: ResMut<AppState>, 
     keys: Res<Input<KeyCode>>,
     mut commands: Commands,
     meshes: ResMut<Assets<Mesh>>,
@@ -43,6 +48,10 @@ fn refresh_ellipses(
 
         setup(commands, meshes, materials, experiment_state);
     }
+    if *app_state != AppState::Experiment {
+        return;
+    }
+
 }
 #[derive(Resource)]
 struct TrialState {
@@ -55,11 +64,44 @@ impl Default for TrialState {
         }
     }
 }
+#[derive(Debug,PartialEq)]
+enum AppState {
+    Instruction,
+    Experiment,
+}
+impl Resource for AppState {}
+
+fn start_experiment_system(
+    keys: Res<Input<KeyCode>>,
+    mut app_state: ResMut<AppState>,
+    mut commands: Commands,
+    meshes: ResMut<Assets<Mesh>>,
+    materials: ResMut<Assets<ColorMaterial>>,
+    mut experiment_state: ResMut<ExperimentState>,
+    text_query: Query<Entity, With<Text>>,
+) {
+    if *app_state == AppState::Instruction && keys.just_pressed(KeyCode::Return) {
+        *app_state = AppState::Experiment;
+        for entity in text_query.iter() {
+            commands.entity(entity).despawn();
+        }
+        setup(commands, meshes, materials, experiment_state);    }
+}
+fn update_background_color_system(app_state: Res<AppState>, mut clear_color: ResMut<ClearColor>) {
+    match *app_state {
+        AppState::Instruction => {
+            clear_color.0 = Color::rgb(0.1, 0.5, 0.5);
+        }
+        AppState::Experiment => {
+            clear_color.0 = Color::GRAY;
+        }
+    }
+}
 #[derive(Component)]
 struct Ellipse;
 #[derive(Default, Resource)]
 struct ExperimentState {
-    final_result: Vec<(usize, usize, String, f32)>, // "1" = left, "0" = right, "space" = equal
+    final_result: Vec<(usize, usize, String, f32)>, 
     num_ellipses_left: usize,
     num_ellipses_right: usize,
     num_trials: usize, 
@@ -100,6 +142,39 @@ fn setup(
     }
 }
 
+fn display_instruction_system(
+    app_state: Res<AppState>,
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+) {
+    if *app_state == AppState::Instruction {
+        let font = asset_server.load("fonts/FiraSans-Bold.ttf"); 
+        let text_style = TextStyle {
+            font: font.clone(),
+            font_size: 30.0,
+            color: Color::WHITE,
+        };
+        let text_alignment = TextAlignment::Center;
+        commands.spawn(Text2dBundle {
+            text: Text::from_section("Wellcome =) \n\n\
+            this project is currently under development this is just a short demo to check if everything is working fine. 
+
+            Instructions:
+            If you see more ellipses on the left click to '1', 
+            if you see more ellipses on the right click to '0', 
+            if you see the same number of ellipses on both sides click to 
+            'Space'.
+
+            Press 'Enter' to start the experiment.
+            Note: You have 5 trials to complete the experiment.
+            questions/comments: enesaltun2@gmail.com
+            
+            ", text_style)
+                .with_alignment(text_alignment), 
+            ..Default::default()
+        });
+    }
+}
 fn update_user_responses(
     keys: Res<Input<KeyCode>>,
     mut experiment_state: ResMut<ExperimentState>,
