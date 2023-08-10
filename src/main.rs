@@ -18,17 +18,27 @@ fn main() {
         .insert_resource(ExperimentState::default())
         .insert_resource(TrialState::default()) 
         .add_systems(Startup, setup_camera)
-        .add_systems(Update, start_experiment_system)
+        .add_systems(Update, remove_instruction_system.before(display_instruction_system))
+        .add_systems(Update, display_instruction_system)
+        .add_systems(Update, start_experiment_system.after(display_instruction_system))
+        .add_systems(Update, update_background_color_system)
         .add_systems(Update, refresh_ellipses)
         .add_systems(Update, update_user_responses)
-        .add_systems(Update, display_instruction_system)
-        .add_systems(Update, update_background_color_system)
-
-
         .run();
 }
 fn setup_camera(mut commands: Commands) {
     commands.spawn(Camera2dBundle::default());
+}
+fn remove_instruction_system(
+    app_state: Res<AppState>,
+    mut commands: Commands,
+    text_query: Query<Entity, With<Text>>,
+) {
+    if *app_state == AppState::Experiment {
+        for entity in text_query.iter() {
+            commands.entity(entity).despawn();
+        }
+    }
 }
 fn refresh_ellipses(
     app_state: ResMut<AppState>, 
