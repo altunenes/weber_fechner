@@ -18,7 +18,7 @@ Currently, it is possible to run the experiment on the web. You can try it [here
 - [x] Collect the data and save it to a file (Response times, accuracy, and the stimulus parameters etc).
 - [x] Add web support via wasm 
 - [x] Save the data as csv in web version
-- [ ] Add instrunction and information about the experiment.
+- [x] Add instrunction and information about the experiment.
 - [ ] Add a menu to change the parameters of the experiment, give instructions, and start the experiment etc.
 - [ ] Reorganize the code, split it into modules, and make it more readable (this will be last step after the experiment is ready for the serious use)
 
