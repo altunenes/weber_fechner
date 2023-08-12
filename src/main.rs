@@ -74,12 +74,11 @@ impl Default for TrialState {
         }
     }
 }
-#[derive(Debug,PartialEq)]
+#[derive(Debug,PartialEq,Resource)]
 enum AppState {
     Instruction,
     Experiment,
 }
-impl Resource for AppState {}
 
 fn start_experiment_system(
     keys: Res<Input<KeyCode>>,
