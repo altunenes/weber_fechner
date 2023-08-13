@@ -8,6 +8,10 @@ use instant::Instant;
 
 
 const TOTAL_TRIAL: usize = 5;
+const MIN_ELLIPSE: usize = 5;
+const MAX_ELLIPSE: usize = 100;
+const PARTICIPANT_ID: &str = "1";
+const RADIUS: f32 = 2.0;
 
 fn main() {
     App::new()
@@ -22,15 +26,18 @@ fn main() {
         .insert_resource(ExperimentState::default())
         .insert_resource(TrialState::default()) 
         .insert_resource(FixationTimer::default())
+
         .add_systems(Startup, setup_camera)
         .add_systems(Update, remove_text_system.before(display_instruction_system))
         .add_systems(Update, display_instruction_system)
         .add_systems(Update, start_experiment_system.after(display_instruction_system))
         .add_systems(Update, display_fixation_system)
         .add_systems(Update, transition_from_fixation_system)
+
         .add_systems(Update, update_background_color_system)
         .add_systems(Update, refresh_ellipses)
         .add_systems(Update, update_user_responses)
+        
         .run();
 }
 fn setup_camera(mut commands: Commands) {
@@ -123,7 +130,7 @@ fn transition_from_fixation_system(
     text_query: Query<Entity, With<Text>>,
     meshes: ResMut<Assets<Mesh>>,
     materials: ResMut<Assets<ColorMaterial>>,
-    mut experiment_state: ResMut<ExperimentState>,
+    experiment_state: ResMut<ExperimentState>,
 ) {
     if *app_state == AppState::Fixation {
         if fixation_timer.timer.tick(time.delta()).just_finished() {
@@ -189,14 +196,14 @@ fn setup(
     let y_range = Uniform::new(-200.0, 200.0);
     let x_2= 450.0;
     let y_range_2 = Uniform::new(-200.0, 200.0);
-    let num_ellipses_1 = rng.gen_range(1..4);
-    let num_ellipses_2 = rng.gen_range(1..4);
+    let num_ellipses_1 = rng.gen_range(MIN_ELLIPSE..MAX_ELLIPSE);
+    let num_ellipses_2 = rng.gen_range(MIN_ELLIPSE..MAX_ELLIPSE);
     experiment_state.num_ellipses_left = num_ellipses_1;
     experiment_state.num_ellipses_right = num_ellipses_2;
     for i in 0..num_ellipses_1 {
         let y = y_range.sample(&mut rng);
         commands.spawn(MaterialMesh2dBundle {
-            mesh: meshes.add(shape::Circle::new(2.).into()).into(),
+            mesh: meshes.add(shape::Circle::new(RADIUS).into()).into(),
             material: materials.add(ColorMaterial::from(Color::PURPLE)),
             transform: Transform::from_translation(Vec3::new(x + i as f32 * 2., y, 0.)),
             ..default()
@@ -206,7 +213,7 @@ fn setup(
     for i in 0..num_ellipses_2{
         let y_2: f32 = y_range_2.sample(&mut rng);
         commands.spawn(MaterialMesh2dBundle {
-            mesh: meshes.add(shape::Circle::new(2.).into()).into(),
+            mesh: meshes.add(shape::Circle::new(RADIUS).into()).into(),
             material: materials.add(ColorMaterial::from(Color::PURPLE)),
             transform: Transform::from_translation(Vec3::new(x_2 + i as f32 * 2., y_2, 0.)),
             ..default()
@@ -330,7 +337,7 @@ fn print_final_results(final_results: &Vec<(usize, usize, String, f32)>) {
     csv_data += &format!("\nMean Accuracy: {}\n", mean_accuracy);
     println!("Mean Correct Response Time: {}", mean_correct_rt);
     csv_data += &format!("Mean Correct Response Time: {}\n", mean_correct_rt);
-    let file_name = format!("participant_{}.csv", 2); // change 1 with participant number
+    let file_name = format!("participant_{}.csv", PARTICIPANT_ID);
 
     #[cfg(target_arch = "wasm32")]
     {
