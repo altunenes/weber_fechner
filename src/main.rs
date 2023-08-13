@@ -1,10 +1,12 @@
-use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
+use bevy::{prelude::*, sprite::MaterialMesh2dBundle,time::Timer};
 use rand::{Rng, thread_rng};
 use rand::distributions::{Distribution, Uniform};
 use std::fs::OpenOptions;
 use std::io::Write;
 use std::process;
 use instant::Instant;
+
+
 const TOTAL_TRIAL: usize = 5;
 
 fn main() {
@@ -19,10 +21,13 @@ fn main() {
         .insert_resource(AppState::Instruction)
         .insert_resource(ExperimentState::default())
         .insert_resource(TrialState::default()) 
+        .insert_resource(FixationTimer::default())
         .add_systems(Startup, setup_camera)
-        .add_systems(Update, remove_instruction_system.before(display_instruction_system))
+        .add_systems(Update, remove_text_system.before(display_instruction_system))
         .add_systems(Update, display_instruction_system)
         .add_systems(Update, start_experiment_system.after(display_instruction_system))
+        .add_systems(Update, display_fixation_system)
+        .add_systems(Update, transition_from_fixation_system)
         .add_systems(Update, update_background_color_system)
         .add_systems(Update, refresh_ellipses)
         .add_systems(Update, update_user_responses)
@@ -31,7 +36,7 @@ fn main() {
 fn setup_camera(mut commands: Commands) {
     commands.spawn(Camera2dBundle::default());
 }
-fn remove_instruction_system(
+fn remove_text_system(
     app_state: Res<AppState>,
     mut commands: Commands,
     text_query: Query<Entity, With<Text>>,
@@ -46,24 +51,20 @@ fn refresh_ellipses(
     app_state: ResMut<AppState>, 
     keys: Res<Input<KeyCode>>,
     mut commands: Commands,
-    meshes: ResMut<Assets<Mesh>>,
-    materials: ResMut<Assets<ColorMaterial>>,
-    experiment_state: ResMut<ExperimentState>,
+    mut experiment_state: ResMut<ExperimentState>,
     mut trial_state: ResMut<TrialState>,
     ellipses: Query<Entity, With<Ellipse>>,
 ) {
-    if !experiment_state.complete && (keys.just_pressed(KeyCode::Key1) || keys.just_pressed(KeyCode::Key0) || keys.just_pressed(KeyCode::Space)) {
+    if experiment_state.ellipses_drawn && (keys.just_pressed(KeyCode::Key1) || keys.just_pressed(KeyCode::Key0) || keys.just_pressed(KeyCode::Space)) {
         for entity in ellipses.iter() {
             commands.entity(entity).despawn();
         }
+        experiment_state.ellipses_drawn = false;
         trial_state.start_time = Instant::now();
-
-        setup(commands, meshes, materials, experiment_state);
     }
     if *app_state != AppState::Experiment {
         return;
     }
-
 }
 #[derive(Resource)]
 struct TrialState {
@@ -80,8 +81,63 @@ impl Default for TrialState {
 enum AppState {
     Instruction,
     Experiment,
+    Fixation,
+}
+#[derive(Resource)]
+struct FixationTimer {
+    timer: Timer,
 }
 
+impl Default for FixationTimer {
+    fn default() -> Self {
+        FixationTimer {
+            timer: Timer::from_seconds(0.5, TimerMode::Once),
+        }
+    }
+}
+fn display_fixation_system(
+    app_state: Res<AppState>,
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+) {
+    if *app_state == AppState::Fixation {
+        let font = asset_server.load("fonts/FiraSans-Bold.ttf"); 
+        let text_style = TextStyle {
+            font: font.clone(),
+            font_size: 150.0,
+            color: Color::WHITE,
+        };
+        let text_alignment = TextAlignment::Center;
+        commands.spawn(Text2dBundle {
+            text: Text::from_section("+", text_style)
+                .with_alignment(text_alignment), 
+            ..Default::default()
+        });
+    }
+}
+fn transition_from_fixation_system(
+    mut app_state: ResMut<AppState>,
+    mut fixation_timer: ResMut<FixationTimer>,
+    time: Res<Time>,
+    mut commands: Commands,
+    text_query: Query<Entity, With<Text>>,
+    meshes: ResMut<Assets<Mesh>>,
+    materials: ResMut<Assets<ColorMaterial>>,
+    mut experiment_state: ResMut<ExperimentState>,
+) {
+    if *app_state == AppState::Fixation {
+        if fixation_timer.timer.tick(time.delta()).just_finished() {
+            for entity in text_query.iter() {
+                commands.entity(entity).despawn();
+            }
+            fixation_timer.timer.reset();
+            if !experiment_state.ellipses_drawn {
+                setup(commands, meshes, materials, experiment_state);
+            }
+            *app_state = AppState::Experiment;
+        }
+    }
+}
 fn start_experiment_system(
     keys: Res<Input<KeyCode>>,
     mut app_state: ResMut<AppState>,
@@ -106,17 +162,21 @@ fn update_background_color_system(app_state: Res<AppState>, mut clear_color: Res
         AppState::Experiment => {
             clear_color.0 = Color::GRAY;
         }
+        AppState::Fixation => {
+            clear_color.0 = Color::GRAY;
+        }
     }
 }
 #[derive(Component)]
 struct Ellipse;
 #[derive(Default, Resource)]
 struct ExperimentState {
-    final_result: Vec<(usize, usize, String, f32)>, 
+    final_result: Vec<(usize, usize, String, f32)>,
     num_ellipses_left: usize,
     num_ellipses_right: usize,
-    num_trials: usize, 
+    num_trials: usize,
     complete: bool,
+    ellipses_drawn: bool, 
 }
 fn setup(
     mut commands: Commands,
@@ -141,6 +201,7 @@ fn setup(
             transform: Transform::from_translation(Vec3::new(x + i as f32 * 2., y, 0.)),
             ..default()
         }).insert(Ellipse);
+
     }
     for i in 0..num_ellipses_2{
         let y_2: f32 = y_range_2.sample(&mut rng);
@@ -151,8 +212,9 @@ fn setup(
             ..default()
         }).insert(Ellipse);
     }
-}
+    experiment_state.ellipses_drawn = true;
 
+}
 fn display_instruction_system(
     app_state: Res<AppState>,
     mut commands: Commands,
@@ -178,8 +240,7 @@ fn display_instruction_system(
 
             Press 'Enter' to start the experiment.
             Note: You have 5 trials to complete the experiment.
-            questions/comments: enesaltun2@gmail.com
-            
+            questions/comments: enesaltun2@gmail.com            
             ", text_style)
                 .with_alignment(text_alignment), 
             ..Default::default()
@@ -190,6 +251,7 @@ fn update_user_responses(
     keys: Res<Input<KeyCode>>,
     mut experiment_state: ResMut<ExperimentState>,
     trial_state: Res<TrialState>,
+    mut app_state: ResMut<AppState>,
 ) {
     if keys.just_pressed(KeyCode::Key1) {
         let num_left = experiment_state.num_ellipses_left;
@@ -204,6 +266,8 @@ fn update_user_responses(
         if experiment_state.num_trials == TOTAL_TRIAL {
             print_final_results(&experiment_state.final_result);
         }
+        *app_state = AppState::Fixation;
+
     }
 
     if keys.just_pressed(KeyCode::Key0) {
@@ -219,6 +283,8 @@ fn update_user_responses(
         if experiment_state.num_trials == TOTAL_TRIAL {
             print_final_results(&experiment_state.final_result);
         }
+        *app_state = AppState::Fixation;
+
     }
 
     if keys.just_pressed(KeyCode::Space) {
@@ -234,6 +300,9 @@ fn update_user_responses(
         if experiment_state.num_trials == TOTAL_TRIAL {
             print_final_results(&experiment_state.final_result);
         }
+        *app_state = AppState::Fixation;
+
+        
     }
     if experiment_state.num_trials == TOTAL_TRIAL {
         print_final_results(&experiment_state.final_result);
