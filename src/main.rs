@@ -5,6 +5,8 @@ use std::fs::OpenOptions;
 use std::io::Write;
 use std::process;
 use instant::Instant;
+const TOTAL_TRIAL: usize = 5;
+
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins.set(WindowPlugin {
@@ -86,7 +88,7 @@ fn start_experiment_system(
     mut commands: Commands,
     meshes: ResMut<Assets<Mesh>>,
     materials: ResMut<Assets<ColorMaterial>>,
-    mut experiment_state: ResMut<ExperimentState>,
+    experiment_state: ResMut<ExperimentState>,
     text_query: Query<Entity, With<Text>>,
 ) {
     if *app_state == AppState::Instruction && keys.just_pressed(KeyCode::Return) {
@@ -199,7 +201,7 @@ fn update_user_responses(
             experiment_state.final_result.push((num_left, num_right, "Incorrect".to_string(), elapsed));
         }
         experiment_state.num_trials += 1;
-        if experiment_state.num_trials == 5 {
+        if experiment_state.num_trials == TOTAL_TRIAL {
             print_final_results(&experiment_state.final_result);
         }
     }
@@ -214,7 +216,7 @@ fn update_user_responses(
             experiment_state.final_result.push((num_left, num_right, "Incorrect".to_string(), elapsed));
         }
         experiment_state.num_trials += 1;
-        if experiment_state.num_trials == 5 {
+        if experiment_state.num_trials == TOTAL_TRIAL {
             print_final_results(&experiment_state.final_result);
         }
     }
@@ -229,11 +231,11 @@ fn update_user_responses(
             experiment_state.final_result.push((num_left, num_right, "Incorrect".to_string(), elapsed));
         }
         experiment_state.num_trials += 1;
-        if experiment_state.num_trials == 5 {
+        if experiment_state.num_trials == TOTAL_TRIAL {
             print_final_results(&experiment_state.final_result);
         }
     }
-    if experiment_state.num_trials == 5 {
+    if experiment_state.num_trials == TOTAL_TRIAL {
         print_final_results(&experiment_state.final_result);
         experiment_state.complete = true;
     }
