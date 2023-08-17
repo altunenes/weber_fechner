@@ -33,11 +33,9 @@ fn main() {
         .add_systems(Update, start_experiment_system.after(display_instruction_system))
         .add_systems(Update, display_fixation_system)
         .add_systems(Update, transition_from_fixation_system)
-
         .add_systems(Update, update_background_color_system)
-        .add_systems(Update, refresh_ellipses)
-        .add_systems(Update, update_user_responses)
-        
+        .add_systems(Update, update_user_responses) 
+        .add_systems(Update, refresh_ellipses.after(update_user_responses)) 
         .run();
 }
 fn setup_camera(mut commands: Commands) {
