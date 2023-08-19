@@ -39,3 +39,6 @@ that's it!
 
 - If you see more ellipses on the left, press the "1". If you see more ellipses on the right side, "0" if you perceive them as equal, press "space".
 If you want to conduct a serious experiment and you are in a hurry don't hesitate to contact me. I will be happy to help you. :)
+
+![image](https://github.com/altunenes/weber_fechner/assets/54986652/f6bc3c7d-4ac4-4e72-bc4b-932e081dcb76)
+
