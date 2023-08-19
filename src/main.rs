@@ -5,9 +5,9 @@ use std::fs::OpenOptions;
 use std::io::Write;
 use std::process;
 use instant::Instant;
+use bevy_egui::{egui, EguiContexts, EguiPlugin};
+use bevy_egui::egui::Widget;
 
-
-const TOTAL_TRIAL: usize = 5;
 const MIN_ELLIPSE: usize = 5;
 const MAX_ELLIPSE: usize = 100;
 const PARTICIPANT_ID: &str = "1";
@@ -22,11 +22,13 @@ fn main() {
             }), 
             ..default()
         }))
+        .add_plugins(EguiPlugin)
         .insert_resource(AppState::Instruction)
         .insert_resource(ExperimentState::default())
+        .insert_resource(TotalTrial::default())
+
         .insert_resource(TrialState::default()) 
         .insert_resource(FixationTimer::default())
-
         .add_systems(Startup, setup_camera)
         .add_systems(Update, remove_text_system.before(display_instruction_system))
         .add_systems(Update, display_instruction_system)
@@ -220,10 +222,27 @@ fn setup(
     experiment_state.ellipses_drawn = true;
 
 }
+
+
+
+#[derive(Debug,Resource)]
+struct TotalTrial(usize);
+
+impl Default for TotalTrial {
+    fn default() -> Self {
+        TotalTrial(5)
+    }
+}
+
+
 fn display_instruction_system(
     app_state: Res<AppState>,
     mut commands: Commands,
     asset_server: Res<AssetServer>,
+    mut contexts: EguiContexts,
+    mut total_trial: ResMut<TotalTrial>, 
+
+
 ) {
     if *app_state == AppState::Instruction {
         let font = asset_server.load("fonts/FiraSans-Bold.ttf"); 
@@ -243,6 +262,8 @@ fn display_instruction_system(
             if you see the same number of ellipses on both sides click to 
             'Space'.
 
+            Set number of trials from the slider.
+
             Press 'Enter' to start the experiment.
             Note: You have 5 trials to complete the experiment.
             questions/comments: enesaltun2@gmail.com            
@@ -251,12 +272,27 @@ fn display_instruction_system(
             ..Default::default()
         });
     }
+    if *app_state == AppState::Instruction {
+        egui::Window::new("Experiment Settings").show(contexts.ctx_mut(), |ui| {
+            ui.horizontal(|ui| {
+                ui.label("TOTAL_TRIAL:");
+                let mut trial_value = total_trial.0 as f32;
+                // Update this section to match the example
+                egui::Slider::new(&mut trial_value, 1.0..=100.0).ui(ui);
+                total_trial.0 = trial_value as usize;
+            });
+        });
+    }
 }
+
+
+
 fn update_user_responses(
     keys: Res<Input<KeyCode>>,
     mut experiment_state: ResMut<ExperimentState>,
     trial_state: Res<TrialState>,
     mut app_state: ResMut<AppState>,
+    total_trial: Res<TotalTrial>,
 ) {
     if keys.just_pressed(KeyCode::Key1) {
         let num_left = experiment_state.num_ellipses_left;
@@ -268,7 +304,7 @@ fn update_user_responses(
             experiment_state.final_result.push((num_left, num_right, "Incorrect".to_string(), elapsed));
         }
         experiment_state.num_trials += 1;
-        if experiment_state.num_trials == TOTAL_TRIAL {
+        if experiment_state.num_trials == total_trial.0 {
             print_final_results(&experiment_state.final_result);
         }
         *app_state = AppState::Fixation;
@@ -285,7 +321,7 @@ fn update_user_responses(
             experiment_state.final_result.push((num_left, num_right, "Incorrect".to_string(), elapsed));
         }
         experiment_state.num_trials += 1;
-        if experiment_state.num_trials == TOTAL_TRIAL {
+        if experiment_state.num_trials == total_trial.0 {
             print_final_results(&experiment_state.final_result);
         }
         *app_state = AppState::Fixation;
@@ -302,14 +338,14 @@ fn update_user_responses(
             experiment_state.final_result.push((num_left, num_right, "Incorrect".to_string(), elapsed));
         }
         experiment_state.num_trials += 1;
-        if experiment_state.num_trials == TOTAL_TRIAL {
+        if experiment_state.num_trials == total_trial.0 {
             print_final_results(&experiment_state.final_result);
         }
         *app_state = AppState::Fixation;
 
         
     }
-    if experiment_state.num_trials == TOTAL_TRIAL {
+    if experiment_state.num_trials == total_trial.0 {
         print_final_results(&experiment_state.final_result);
         experiment_state.complete = true;
     }

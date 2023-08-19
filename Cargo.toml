@@ -12,10 +12,12 @@ opt-level = 1
 opt-level = 3
 
 [dependencies]
-bevy = { version = "0.11"} 
+bevy = { version = "0.11.2"} 
 rand = "0.8.5"
 serde = "1.0.178"
 instant = "0.1"
 web-sys = { version = "0.3", features = ["Blob", "Url", "HtmlAnchorElement", "Window", "Document"] }
 wasm-bindgen = "0.2.87"
 js-sys = "0.3.64"
+bevy_asset_loader = "0.17.0"
+bevy_egui = "0.21.0"
