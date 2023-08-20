@@ -3,7 +3,6 @@ use rand::{Rng, thread_rng};
 use rand::distributions::{Distribution, Uniform};
 use std::fs::OpenOptions;
 use std::io::Write;
-use std::process;
 use instant::Instant;
 use bevy_egui::{egui, EguiContexts, EguiPlugin};
 use bevy_egui::egui::Widget;
@@ -26,7 +25,6 @@ fn main() {
         .insert_resource(AppState::Instruction)
         .insert_resource(ExperimentState::default())
         .insert_resource(TotalTrial::default())
-
         .insert_resource(TrialState::default()) 
         .insert_resource(FixationTimer::default())
         .add_systems(Startup, setup_camera)
@@ -157,13 +155,16 @@ fn start_experiment_system(
     materials: ResMut<Assets<ColorMaterial>>,
     experiment_state: ResMut<ExperimentState>,
     text_query: Query<Entity, With<Text>>,
+    mut trial_state: ResMut<TrialState>, 
 ) {
     if *app_state == AppState::Instruction && keys.just_pressed(KeyCode::Return) {
         *app_state = AppState::Experiment;
         for entity in text_query.iter() {
             commands.entity(entity).despawn();
         }
-        setup(commands, meshes, materials, experiment_state);    }
+        trial_state.start_time = Instant::now(); 
+        setup(commands, meshes, materials, experiment_state);    
+    }
 }
 fn update_background_color_system(app_state: Res<AppState>, mut clear_color: ResMut<ClearColor>) {
     match *app_state {
@@ -292,6 +293,8 @@ impl Default for TotalTrial {
 }
 
 
+
+
 fn display_instruction_system(
     app_state: Res<AppState>,
     mut commands: Commands,
@@ -334,10 +337,10 @@ fn display_instruction_system(
             ui.horizontal(|ui| {
                 ui.label("TOTAL_TRIAL:");
                 let mut trial_value = total_trial.0 as f32;
-                // Update this section to match the example
                 egui::Slider::new(&mut trial_value, 1.0..=100.0).ui(ui);
                 total_trial.0 = trial_value as usize;
             });
+            
         });
     }
 }
@@ -348,6 +351,10 @@ fn update_user_responses(
     mut app_state: ResMut<AppState>,
     total_trial: Res<TotalTrial>,
 ) {
+    if *app_state != AppState::Experiment {
+        return;
+    }
+
     if keys.just_pressed(KeyCode::Key1) {
         let num_left = experiment_state.num_ellipses_left;
         let num_right = experiment_state.num_ellipses_right;
@@ -396,6 +403,10 @@ fn update_user_responses(
         print_final_results(&experiment_state.final_result);
         experiment_state.complete = true; 
         *app_state = AppState::Results;
+    }
+
+    if *app_state == AppState::Results{
+        return;
     }
 
 }
