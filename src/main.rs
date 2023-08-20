@@ -417,7 +417,7 @@ fn print_final_results(final_results: &Vec<(usize, usize, String, f32)>) {
     .iter()
     .filter(|(_, _, is_correct, _)| is_correct == "Correct") 
     .map(|(_, _, _, response_time)| response_time)
-    .sum::<f32>() / final_results.len() as f32;
+    .sum::<f32>() / correct_count as f32;
     println!("Mean Accuracy: {}", mean_accuracy);
     csv_data += &format!("\nMean Accuracy: {}\n", mean_accuracy);
     println!("Mean Correct Response Time: {}", mean_correct_rt);
