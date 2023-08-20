@@ -6,11 +6,7 @@ use std::io::Write;
 use instant::Instant;
 use bevy_egui::{egui, EguiContexts, EguiPlugin};
 use bevy_egui::egui::Widget;
-
-const MIN_ELLIPSE: usize = 5;
-const MAX_ELLIPSE: usize = 100;
 const PARTICIPANT_ID: &str = "1";
-const RADIUS: f32 = 2.0;
 
 fn main() {
     App::new()
@@ -25,6 +21,9 @@ fn main() {
         .insert_resource(AppState::Instruction)
         .insert_resource(ExperimentState::default())
         .insert_resource(TotalTrial::default())
+        .insert_resource(Radius::default())
+        .insert_resource(MinEllipse::default())
+        .insert_resource(MaxEllipse::default())
         .insert_resource(TrialState::default()) 
         .insert_resource(FixationTimer::default())
         .add_systems(Startup, setup_camera)
@@ -103,8 +102,7 @@ impl Default for FixationTimer {
             timer: Timer::from_seconds(0.5, TimerMode::Once),
         }
     }
-}
-fn display_fixation_system(
+}fn display_fixation_system(
     app_state: Res<AppState>,
     mut commands: Commands,
     asset_server: Res<AssetServer>,
@@ -133,6 +131,9 @@ fn transition_from_fixation_system(
     meshes: ResMut<Assets<Mesh>>,
     materials: ResMut<Assets<ColorMaterial>>,
     experiment_state: ResMut<ExperimentState>,
+    radius: Res<Radius>,
+    min_ellipse: Res<MinEllipse>,
+    max_ellipse: Res<MaxEllipse>,
 ) {
     if *app_state == AppState::Fixation {
         if fixation_timer.timer.tick(time.delta()).just_finished() {
@@ -141,7 +142,7 @@ fn transition_from_fixation_system(
             }
             fixation_timer.timer.reset();
             if !experiment_state.ellipses_drawn {
-                setup(commands, meshes, materials, experiment_state);
+                setup(commands, meshes, materials, experiment_state,radius,min_ellipse,max_ellipse);    
             }
             *app_state = AppState::Experiment;
         }
@@ -156,6 +157,9 @@ fn start_experiment_system(
     experiment_state: ResMut<ExperimentState>,
     text_query: Query<Entity, With<Text>>,
     mut trial_state: ResMut<TrialState>, 
+    radius: Res<Radius>,
+    min_ellipse: Res<MinEllipse>,
+    max_ellipse: Res<MaxEllipse>,
 ) {
     if *app_state == AppState::Instruction && keys.just_pressed(KeyCode::Return) {
         *app_state = AppState::Experiment;
@@ -163,7 +167,7 @@ fn start_experiment_system(
             commands.entity(entity).despawn();
         }
         trial_state.start_time = Instant::now(); 
-        setup(commands, meshes, materials, experiment_state);    
+        setup(commands, meshes, materials, experiment_state,radius,min_ellipse,max_ellipse);    
     }
 }
 fn update_background_color_system(app_state: Res<AppState>, mut clear_color: ResMut<ClearColor>) {
@@ -248,20 +252,23 @@ fn setup(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
     mut experiment_state: ResMut<ExperimentState>,
+    radius: Res<Radius>,
+    min_ellipse: Res<MinEllipse>,
+    max_ellipse: Res<MaxEllipse>,
 ) {
     let mut rng = thread_rng();
     let x = -450.0;
     let y_range = Uniform::new(-200.0, 200.0);
     let x_2= 450.0;
     let y_range_2 = Uniform::new(-200.0, 200.0);
-    let num_ellipses_1 = rng.gen_range(MIN_ELLIPSE..MAX_ELLIPSE);
-    let num_ellipses_2 = rng.gen_range(MIN_ELLIPSE..MAX_ELLIPSE);
+    let num_ellipses_1 = rng.gen_range(min_ellipse.0..max_ellipse.0);
+    let num_ellipses_2 = rng.gen_range(min_ellipse.0..max_ellipse.0);
     experiment_state.num_ellipses_left = num_ellipses_1;
     experiment_state.num_ellipses_right = num_ellipses_2;
     for i in 0..num_ellipses_1 {
         let y = y_range.sample(&mut rng);
         commands.spawn(MaterialMesh2dBundle {
-            mesh: meshes.add(shape::Circle::new(RADIUS).into()).into(),
+            mesh: meshes.add(shape::Circle::new(radius.0).into()).into(),
             material: materials.add(ColorMaterial::from(Color::PURPLE)),
             transform: Transform::from_translation(Vec3::new(x + i as f32 * 2., y, 0.)),
             ..default()
@@ -271,7 +278,7 @@ fn setup(
     for i in 0..num_ellipses_2{
         let y_2: f32 = y_range_2.sample(&mut rng);
         commands.spawn(MaterialMesh2dBundle {
-            mesh: meshes.add(shape::Circle::new(RADIUS).into()).into(),
+            mesh: meshes.add(shape::Circle::new(radius.0).into()).into(),
             material: materials.add(ColorMaterial::from(Color::PURPLE)),
             transform: Transform::from_translation(Vec3::new(x_2 + i as f32 * 2., y_2, 0.)),
             ..default()
@@ -292,7 +299,29 @@ impl Default for TotalTrial {
     }
 }
 
+#[derive(Debug,Resource)]
+struct Radius(f32);
+impl Default for Radius {
+    fn default() -> Self {
+        Radius(2.0)
+    }
+}
 
+#[derive(Debug,Resource)]
+struct MinEllipse(usize);
+impl Default for MinEllipse {
+    fn default() -> Self {
+        MinEllipse(5)
+    }
+}
+
+#[derive(Debug,Resource)]
+struct MaxEllipse(usize);
+impl Default for MaxEllipse {
+    fn default() -> Self {
+        MaxEllipse(100)
+    }
+}
 
 
 fn display_instruction_system(
@@ -301,6 +330,9 @@ fn display_instruction_system(
     asset_server: Res<AssetServer>,
     mut contexts: EguiContexts,
     mut total_trial: ResMut<TotalTrial>, 
+    mut radius: ResMut<Radius>,
+    mut min_ellipse: ResMut<MinEllipse>,
+    mut max_ellipse: ResMut<MaxEllipse>,
 
 
 ) {
@@ -325,7 +357,9 @@ fn display_instruction_system(
             Set number of trials from the slider.
 
             Press 'Enter' to start the experiment.
-            Note: You have 5 trials to complete the experiment.
+
+            Please make sure you are in full screen mode.
+
             questions/comments: enesaltun2@gmail.com            
             ", text_style)
                 .with_alignment(text_alignment), 
@@ -339,6 +373,25 @@ fn display_instruction_system(
                 let mut trial_value = total_trial.0 as f32;
                 egui::Slider::new(&mut trial_value, 1.0..=100.0).ui(ui);
                 total_trial.0 = trial_value as usize;
+            });
+            ui.horizontal(|ui| {
+                ui.label("RADIUS:");
+                let mut radius_value = radius.0;
+                egui::Slider::new(&mut radius_value, 1.0..=5.0).ui(ui);
+                radius.0 = radius_value;
+            });
+            ui.horizontal(|ui| {
+                ui.label("MIN_ELLIPSE:");
+                let mut min_ellipse_value = min_ellipse.0 as f32;
+                egui::Slider::new(&mut min_ellipse_value, 1.0..=10.0).ui(ui);
+                min_ellipse.0 = min_ellipse_value as usize;
+            });
+
+            ui.horizontal(|ui| {
+                ui.label("MAX_ELLIPSE:");
+                let mut max_ellipse_value = max_ellipse.0 as f32;
+                egui::Slider::new(&mut max_ellipse_value, 1.0..=100.0).ui(ui);
+                max_ellipse.0 = max_ellipse_value as usize;
             });
             
         });
