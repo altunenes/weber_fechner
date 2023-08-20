@@ -207,13 +207,12 @@ fn display_results_system(
         let mut correct_rt_sum = 0.0;
         let mut correct_rt_count = 0;
 
-        for (trial, (num_left, num_right, result, response_time)) in experiment_state.final_result.iter().enumerate() {
+        for (_, (_, _, result, response_time)) in experiment_state.final_result.iter().enumerate() {
             if result == "Correct" {
                 correct_count += 1;
                 correct_rt_sum += *response_time;
                 correct_rt_count += 1;
             }
-            results_text += &format!("Trial {}: Left = {}, Right = {}, Result = {}, Response Time = {}\n", trial+1, num_left, num_right, result, response_time);
         }
 
         let mean_accuracy: f32 = correct_count as f32 / experiment_state.final_result.len() as f32;
@@ -221,11 +220,18 @@ fn display_results_system(
             correct_rt_sum / correct_rt_count as f32
         } else {
             0.0
-        };
-        
-        results_text += &format!("\nMean Accuracy: {}", mean_accuracy);
-        results_text += &format!("\nMean Correct Response Time: {:.2}", mean_correct_rt); 
-
+        }; 
+        results_text += &format!("\nDone! Contact me for any suggestions/questions https://github.com/altunenes/weber_fechner");
+    
+        results_text += &format!("\n\nMean Accuracy: {}", mean_accuracy);
+        results_text += &format!("\nMean Correct Response Time: {:.2}", mean_correct_rt);
+        if experiment_state.final_result.len() > 10 { 
+            results_text += "\n Detailed results saved as csv file.";
+        } else {
+            for (trial, (num_left, num_right, result, response_time)) in experiment_state.final_result.iter().enumerate() {
+                results_text += &format!("\nTrial {}: Left = {}, Right = {}, Result = {}, Response Time = {}", trial+1, num_left, num_right, result, response_time);
+            }
+        }
         commands.spawn(Text2dBundle {
             text: Text::from_section(&results_text, text_style)
                 .with_alignment(text_alignment), 

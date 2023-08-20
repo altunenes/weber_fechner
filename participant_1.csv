@@ -1,18 +1,20 @@
 Trial,Num_Left,Num_Right,Result,Response_Time
-1,32,95,Correct,1.6989315
-2,70,86,Correct,1.2767854
-3,47,12,Incorrect,0.8531662
-4,61,22,Correct,0.7866839
-5,64,34,Correct,0.8433408
-
-Mean Accuracy: 0.8
-Mean Correct Response Time: 1.1514354
-9332814
-
-67,Incorrect,0.9196956
-9,27,33,Incorrect,0.97078776
-10,6,57,Incorrect,0.71278846
-11,65,8,Correct,0.73040444
+1,90,52,Correct,0.8297627
+2,49,81,Incorrect,1.2521683
+3,36,90,Incorrect,0.6700705
+4,68,63,Correct,0.6264772
+5,92,56,Correct,0.66999394
+6,57,70,Incorrect,0.8399447
+7,25,35,Incorrect,0.97997636
+8,29,15,Correct,0.8334007
+9,55,62,Incorrect,0.97062963
+10,31,66,Incorrect,0.8660494
+11,53,40,Correct,0.7199417
 
 Mean Accuracy: 0.45454547
-Mean Correct Response Time: 1.5763669
+Mean Correct Response Time: 0.73591524
+ncorrect,0.56831235
+15,43,42,Correct,0.6351186
+
+Mean Accuracy: 0.4
+Mean Correct Response Time: 0.5974173
