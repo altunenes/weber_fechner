@@ -38,6 +38,9 @@ fn main() {
         .add_systems(Update, update_background_color_system)
         .add_systems(Update, update_user_responses) 
         .add_systems(Update, refresh_ellipses.after(update_user_responses)) 
+        .add_systems(Update, display_results_system)
+        
+
         .run();
 }
 fn setup_camera(mut commands: Commands) {
@@ -89,6 +92,7 @@ enum AppState {
     Instruction,
     Experiment,
     Fixation,
+    Results,
 }
 #[derive(Resource)]
 struct FixationTimer {
@@ -172,8 +176,61 @@ fn update_background_color_system(app_state: Res<AppState>, mut clear_color: Res
         AppState::Fixation => {
             clear_color.0 = Color::GRAY;
         }
+        AppState::Results => {
+            clear_color.0 = Color::rgb(0.1, 0.5, 0.5);
+        }
     }
 }
+
+fn display_results_system(
+    app_state: Res<AppState>,
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    experiment_state: Res<ExperimentState>,
+) {
+    if *app_state == AppState::Results {
+        let font = asset_server.load("fonts/FiraSans-Bold.ttf"); 
+        let text_style = TextStyle {
+            font: font.clone(),
+            font_size: 30.0,
+            color: Color::WHITE,
+        };
+        let text_alignment = TextAlignment::Center;
+
+        let mut results_text = String::from("---Final Results---\n");
+        let mut correct_count = 0;
+        let mut correct_rt_sum = 0.0;
+        let mut correct_rt_count = 0;
+
+        for (trial, (num_left, num_right, result, response_time)) in experiment_state.final_result.iter().enumerate() {
+            if result == "Correct" {
+                correct_count += 1;
+                correct_rt_sum += *response_time;
+                correct_rt_count += 1;
+            }
+            results_text += &format!("Trial {}: Left = {}, Right = {}, Result = {}, Response Time = {}\n", trial+1, num_left, num_right, result, response_time);
+        }
+
+        let mean_accuracy: f32 = correct_count as f32 / experiment_state.final_result.len() as f32;
+        let mean_correct_rt = if correct_rt_count > 0 {
+            correct_rt_sum / correct_rt_count as f32
+        } else {
+            0.0
+        };
+        
+        results_text += &format!("\nMean Accuracy: {}", mean_accuracy);
+        results_text += &format!("\nMean Correct Response Time: {:.2}", mean_correct_rt); 
+
+        commands.spawn(Text2dBundle {
+            text: Text::from_section(&results_text, text_style)
+                .with_alignment(text_alignment), 
+            ..Default::default()
+        });
+    }
+}
+
+
+
 #[derive(Component)]
 struct Ellipse;
 #[derive(Default, Resource)]
@@ -284,9 +341,6 @@ fn display_instruction_system(
         });
     }
 }
-
-
-
 fn update_user_responses(
     keys: Res<Input<KeyCode>>,
     mut experiment_state: ResMut<ExperimentState>,
@@ -304,13 +358,8 @@ fn update_user_responses(
             experiment_state.final_result.push((num_left, num_right, "Incorrect".to_string(), elapsed));
         }
         experiment_state.num_trials += 1;
-        if experiment_state.num_trials == total_trial.0 {
-            print_final_results(&experiment_state.final_result);
-        }
         *app_state = AppState::Fixation;
-
     }
-
     if keys.just_pressed(KeyCode::Key0) {
         let num_left = experiment_state.num_ellipses_left;
         let num_right = experiment_state.num_ellipses_right;
@@ -325,9 +374,7 @@ fn update_user_responses(
             print_final_results(&experiment_state.final_result);
         }
         *app_state = AppState::Fixation;
-
     }
-
     if keys.just_pressed(KeyCode::Space) {
         let num_left = experiment_state.num_ellipses_left;
         let num_right = experiment_state.num_ellipses_right;
@@ -345,11 +392,15 @@ fn update_user_responses(
 
         
     }
-    if experiment_state.num_trials == total_trial.0 {
+    if experiment_state.num_trials == total_trial.0 && !experiment_state.complete {
         print_final_results(&experiment_state.final_result);
-        experiment_state.complete = true;
+        experiment_state.complete = true; 
+        *app_state = AppState::Results;
     }
+
 }
+
+
 fn print_final_results(final_results: &Vec<(usize, usize, String, f32)>) {
     println!("---Final Results---");
     let mut csv_data = String::from("Trial,Num_Left,Num_Right,Result,Response_Time\n");
@@ -404,5 +455,4 @@ fn print_final_results(final_results: &Vec<(usize, usize, String, f32)>) {
         println!("Data saved to {}", &file_name);
     }
 
-    process::exit(0);
 }
