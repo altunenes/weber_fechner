@@ -2,43 +2,32 @@
 
 # weber_fechner
 
-A psychophysics experiment about Weber–Fechner law based on vision using `bevy` game engine.
+![Firefly Weber Fechner Ψ-rust programming, red happy cartoon crab 45875](https://github.com/altunenes/weber_fechner/assets/54986652/fce47cdf-dc3b-4d9d-bc89-2eb7ebded0f3)
 
-Currently, it is just a template for the experiment, and it is not ready for the serious use.
+A psychophysics experiment about Weber–Fechner law based on vision using `bevy` game engine.
 
 ## WASM Support
 
-Currently, it is possible to run the experiment on the web. You can try it [here](https://altunenes.github.io/weber_fechner/). But it is kust a template and it is not ready for the serious use. 
+Currently, it is possible to run the experiment on the web. You can try it [here](https://altunenes.github.io/weber_fechner/). But the desktop version is more stable.
 
-## Roadmap
-
-- [x] Basic experiment template using `bevy`.
-- [x] Show the stimulus and change the frames based on the keyboard input.
-- [x] Track the keyboard inputs, Response time, and the correctness of the response.
-- [x] Collect the data and save it to a file (Response times, accuracy, and the stimulus parameters etc).
-- [x] Add web support via wasm 
-- [x] Save the data as csv in web version
-- [x] Add instrunction and information about the experiment.
-- [x] Add a menu to change the parameters of the experiment, give instructions, and start the experiment etc.
-- [ ] Reorganize the code, split it into modules, and make it more readable (this will be last step after the experiment is ready for the serious use)
 
 ## Future Work
-- This template can be used for other psychophysics experiments since it is very generic. Faces, objects, gabors and other stimuli can be used instead of the ellipses. Bevy is a very powerful game engine and it can be used for other experiments as well. And it can be work on the any platform that supports Rust including mobile devices. 
+- This template can be used for other psychophysics experiments since it is very generic. Faces, objects, Gabors and other stimuli can be used instead of the ellipses. Bevy is a very powerful game engine and it can be used for other experiments as well. And it can work on any platform that supports Rust including mobile devices. 
 
-After all isn't all psychology experiments are just a game? :)
+After all, isn't all psychology experiments just a game? :)
 
 ## How to run
-As I mentioned before, this is just a template and it is not ready for the serious use. But if you want to try it, you can run it with the following command:
 
 ```rust
 cargo run --release
 ```
+
 that's it!
 
-## How to use
+## Logic
 
 - If you see more ellipses on the left, press the "1". If you see more ellipses on the right side, "0" if you perceive them as equal, press "space".
-If you want to conduct a serious experiment and you are in a hurry don't hesitate to contact me. I will be happy to help you. :)
 
-![image](https://github.com/altunenes/weber_fechner/assets/54986652/f6bc3c7d-4ac4-4e72-bc4b-932e081dcb76)
+you can modify the number of trials, ellipse radius, or min_max values of distributions before the experiment.
 
+![image](https://github.com/altunenes/weber_fechner/assets/54986652/7d03a34a-7081-40a9-8f25-29d04dc83ec1)
