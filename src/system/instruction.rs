@@ -7,6 +7,9 @@ use crate::state::experiment::MinEllipse;
 use crate::state::experiment::MaxEllipse;
 use crate::state::experiment::AppState;
 use crate::state::experiment::TotalTrial;
+use crate::state::experiment::EllipseColor;
+use crate::state::experiment::ExperimentBackgroundColor;
+use crate::state::experiment::FixationBackgroundColor;
 
 pub fn display_instruction_system(
     app_state: Res<AppState>,
@@ -17,6 +20,9 @@ pub fn display_instruction_system(
     mut radius: ResMut<Radius>,
     mut min_ellipse: ResMut<MinEllipse>,
     mut max_ellipse: ResMut<MaxEllipse>,
+    mut ellipse_color_resource: ResMut<EllipseColor>,
+    mut experiment_background_color: ResMut<ExperimentBackgroundColor>,
+    mut fixation_background_color: ResMut<FixationBackgroundColor>,
 
 
 ) {
@@ -77,7 +83,46 @@ pub fn display_instruction_system(
                 egui::Slider::new(&mut max_ellipse_value, 1.0..=100.0).ui(ui);
                 max_ellipse.0 = max_ellipse_value as usize;
             });
+
+            ui.horizontal(|ui| {
+                ui.label("ELLIPSE COLOR:");
+                color_picker_widget(ui, &mut ellipse_color_resource.0);
+            });
+            ui.horizontal(|ui| {
+                ui.label("EXPERIMENT BG COLOR:");
+                color_picker_widget(ui, &mut experiment_background_color.0);
+            });
             
+            ui.horizontal(|ui| {
+                ui.label("FIXATION BG COLOR:");
+                color_picker_widget(ui, &mut fixation_background_color.0);
+            });
+
         });
     }
+}
+
+
+fn color_picker_widget(ui: &mut egui::Ui, color: &mut Color) -> egui::Response {
+    let [r, g, b, a] = color.as_rgba_f32();
+    let mut egui_color: egui::Rgba = egui::Rgba::from_srgba_unmultiplied(
+        (r * 255.0) as u8,
+        (g * 255.0) as u8,
+        (b * 255.0) as u8,
+        (a * 255.0) as u8,
+    );
+    let res = egui::widgets::color_picker::color_edit_button_rgba(
+        ui,
+        &mut egui_color,
+        egui::color_picker::Alpha::Opaque,
+    );
+    let [r, g, b, a] = egui_color.to_srgba_unmultiplied();
+    *color = [
+        r as f32 / 255.0,
+        g as f32 / 255.0,
+        b as f32 / 255.0,
+        a as f32 / 255.0,
+    ]
+    .into();
+    res
 }

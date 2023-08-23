@@ -6,6 +6,8 @@ use crate::state::experiment::Ellipse;
 use crate::state::experiment::Radius;
 use crate::state::experiment::MinEllipse;
 use crate::state::experiment::MaxEllipse;
+use crate::state::experiment::EllipseColor;
+
 
 
 pub fn setup(
@@ -16,6 +18,8 @@ pub fn setup(
     radius: Res<Radius>,
     min_ellipse: Res<MinEllipse>,
     max_ellipse: Res<MaxEllipse>,
+    ellipse_color_resource: ResMut<EllipseColor>,
+
 ) {
     let mut rng = thread_rng();
     let x = -450.0;
@@ -30,7 +34,7 @@ pub fn setup(
         let y = y_range.sample(&mut rng);
         commands.spawn(MaterialMesh2dBundle {
             mesh: meshes.add(shape::Circle::new(radius.0).into()).into(),
-            material: materials.add(ColorMaterial::from(Color::PURPLE)),
+            material: materials.add(ColorMaterial::from(ellipse_color_resource.0)),
             transform: Transform::from_translation(Vec3::new(x + i as f32 * 2., y, 0.)),
             ..default()
         }).insert(Ellipse);
@@ -40,7 +44,7 @@ pub fn setup(
         let y_2: f32 = y_range_2.sample(&mut rng);
         commands.spawn(MaterialMesh2dBundle {
             mesh: meshes.add(shape::Circle::new(radius.0).into()).into(),
-            material: materials.add(ColorMaterial::from(Color::PURPLE)),
+            material: materials.add(ColorMaterial::from(ellipse_color_resource.0)),
             transform: Transform::from_translation(Vec3::new(x_2 + i as f32 * 2., y_2, 0.)),
             ..default()
         }).insert(Ellipse);

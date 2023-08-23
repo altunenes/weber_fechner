@@ -5,6 +5,8 @@ use crate::state::experiment::Radius;
 use crate::state::experiment::MinEllipse;
 use crate::state::experiment::MaxEllipse;
 use crate::state::experiment::FixationTimer;
+use crate::state::experiment::EllipseColor;
+
 use crate::setup::setup;
 
 
@@ -21,6 +23,7 @@ pub fn transition_from_fixation_system(
     radius: Res<Radius>,
     min_ellipse: Res<MinEllipse>,
     max_ellipse: Res<MaxEllipse>,
+    ellipse_color_resource: ResMut<EllipseColor>,
 ) {
     if *app_state == AppState::Fixation {
         if fixation_timer.timer.tick(time.delta()).just_finished() {
@@ -29,7 +32,7 @@ pub fn transition_from_fixation_system(
             }
             fixation_timer.timer.reset();
             if !experiment_state.ellipses_drawn {
-                setup(commands, meshes, materials, experiment_state,radius,min_ellipse,max_ellipse);    
+                setup(commands, meshes, materials, experiment_state,radius,min_ellipse,max_ellipse,ellipse_color_resource);    
             }
             *app_state = AppState::Experiment;
         }

@@ -7,7 +7,8 @@ use crate::state::experiment::TrialState;
 use instant::Instant;
 use crate::state::experiment::TotalTrial;
 use crate::system::output::print_final_results;
-
+use crate::state::experiment::ExperimentBackgroundColor;
+use crate::state::experiment::FixationBackgroundColor;
 
 pub fn remove_text_system(
     app_state: Res<AppState>,
@@ -41,16 +42,18 @@ pub fn refresh_ellipses(
 }
 
 
-pub fn update_background_color_system(app_state: Res<AppState>, mut clear_color: ResMut<ClearColor>) {
+pub fn update_background_color_system(app_state: Res<AppState>, mut clear_color: ResMut<ClearColor>,
+    experiment_bg_color_resource: Res<ExperimentBackgroundColor>,
+    fixation_bg_color_resource: Res<FixationBackgroundColor>,) {
     match *app_state {
         AppState::Instruction => {
             clear_color.0 = Color::rgb(0.1, 0.5, 0.5);
         }
         AppState::Experiment => {
-            clear_color.0 = Color::GRAY;
+            clear_color.0 = experiment_bg_color_resource.0;
         }
         AppState::Fixation => {
-            clear_color.0 = Color::GRAY;
+            clear_color.0 = fixation_bg_color_resource.0;
         }
         AppState::Results => {
             clear_color.0 = Color::rgb(0.1, 0.5, 0.5);

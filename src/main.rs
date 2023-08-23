@@ -15,6 +15,9 @@ use state::experiment::MaxEllipse;
 use state::experiment::TotalTrial;
 use state::experiment::TrialState;
 use state::experiment::FixationTimer;
+use state::experiment::EllipseColor;
+use crate::state::experiment::ExperimentBackgroundColor;
+use crate::state::experiment::FixationBackgroundColor;
 
 
 
@@ -55,6 +58,9 @@ fn main() {
         .insert_resource(MaxEllipse::default())
         .insert_resource(TrialState::default()) 
         .insert_resource(FixationTimer::default())
+        .insert_resource(EllipseColor::default())
+        .insert_resource(ExperimentBackgroundColor::default())
+        .insert_resource(FixationBackgroundColor::default())
         .add_systems(Startup, setup_camera)
         .add_systems(Update, remove_text_system.before(display_instruction_system))
         .add_systems(Update, display_instruction_system)

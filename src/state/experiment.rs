@@ -49,7 +49,13 @@ impl Default for MaxEllipse {
     }
 }
 
-
+#[derive(Debug,Resource)]
+pub struct EllipseColor(pub Color);
+impl Default for EllipseColor {
+    fn default() -> Self {
+        EllipseColor(Color::PURPLE)
+    }
+}
 
 
 #[derive(Resource)]
@@ -80,5 +86,21 @@ impl Default for FixationTimer {
         FixationTimer {
             timer: Timer::from_seconds(0.5, TimerMode::Once),
         }
+    }
+}
+
+#[derive(Debug,Resource)]
+pub struct ExperimentBackgroundColor(pub Color);
+impl Default for ExperimentBackgroundColor {
+    fn default() -> Self {
+        ExperimentBackgroundColor(Color::GRAY)
+    }
+}
+
+#[derive(Debug,Resource)]
+pub struct FixationBackgroundColor(pub Color);
+impl Default for FixationBackgroundColor {
+    fn default() -> Self {
+        FixationBackgroundColor(Color::GRAY)
     }
 }
