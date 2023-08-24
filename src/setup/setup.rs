@@ -9,6 +9,7 @@ use crate::state::experiment::MaxEllipse;
 use crate::state::experiment::EllipseColor;
 use crate::state::experiment::DrawingMethod;
 use crate::state::experiment::CurrentDrawingMethod;
+use rand_distr::Normal;
 
 
 pub fn setup(
@@ -182,6 +183,41 @@ DrawingMethod::Spiral => {
     }
 },
 
+DrawingMethod::Gaussian => {
+    let mean = 0.0;
+    let standard_deviation = 100.0;
+    let normal = Normal::new(mean, standard_deviation).unwrap();
+
+    let mut generate_positions = |num_ellipses, x_offset| {
+        let mut positions = Vec::new();
+        for _ in 0..num_ellipses {
+            let pos_x = x_offset + normal.sample(&mut rng);
+            let pos_y = normal.sample(&mut rng);
+            positions.push((pos_x, pos_y));
+        }
+        positions
+    };
+
+    let left_positions = generate_positions(num_ellipses_1, x);
+    let right_positions = generate_positions(num_ellipses_2, x_2);
+    for (pos_x, pos_y) in left_positions {
+        commands.spawn(MaterialMesh2dBundle {
+            mesh: meshes.add(shape::Circle::new(radius.0).into()).into(),
+            material: materials.add(ColorMaterial::from(ellipse_color_resource.0)),
+            transform: Transform::from_translation(Vec3::new(pos_x, pos_y, 0.)),
+            ..default()
+        }).insert(Ellipse);
+    }
+
+    for (pos_x, pos_y) in right_positions {
+        commands.spawn(MaterialMesh2dBundle {
+            mesh: meshes.add(shape::Circle::new(radius.0).into()).into(),
+            material: materials.add(ColorMaterial::from(ellipse_color_resource.0)),
+            transform: Transform::from_translation(Vec3::new(pos_x, pos_y, 0.)),
+            ..default()
+        }).insert(Ellipse);
+    }
+},
     }
     
     experiment_state.ellipses_drawn = true;

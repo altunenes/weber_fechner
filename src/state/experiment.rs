@@ -112,6 +112,7 @@ pub enum DrawingMethod{
     Grid,
     Circular,
     Spiral,
+    Gaussian,
 }
 
 #[derive(Debug,Resource)]
