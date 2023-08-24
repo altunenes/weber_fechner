@@ -28,6 +28,11 @@ that's it!
 
 - If you see more ellipses on the left, press the "1". If you see more ellipses on the right side, "0" if you perceive them as equal, press "space".
 
-you can modify the number of trials, ellipse radius, or min_max values of distributions before the experiment.
+you can modify the number of trials, ellipse radius, or min_max values of distributions before the experiment. Also you can change the drawing method/distribution of ellipses.
+
 
 ![image](https://github.com/altunenes/weber_fechner/assets/54986652/7d03a34a-7081-40a9-8f25-29d04dc83ec1)
+
+
+## Contribution
+- Feel free to contribute to the project. I am open to any suggestions. Please open an issue if you have any questions or suggestions etc.
