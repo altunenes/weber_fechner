@@ -10,7 +10,7 @@ A psychophysics experiment about Weber–Fechner law based on vision using `bevy
 
 Currently, it is possible to run the experiment on the web. You can try it [here](https://altunenes.github.io/weber_fechner/). But the desktop version is more stable.
 
-Note: Wait for the experiment to load. It may take a while (white screen is normal for a while).
+Note: In WASM version, the loading time may take a while, so if you see a blank/white screen, please wait for a while.
 
 
 ## Future Work
