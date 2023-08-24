@@ -10,6 +10,9 @@ use crate::state::experiment::TotalTrial;
 use crate::state::experiment::EllipseColor;
 use crate::state::experiment::ExperimentBackgroundColor;
 use crate::state::experiment::FixationBackgroundColor;
+use crate::state::experiment::DrawingMethod;
+use crate::state::experiment::CurrentDrawingMethod;
+
 
 pub fn display_instruction_system(
     app_state: Res<AppState>,
@@ -23,6 +26,7 @@ pub fn display_instruction_system(
     mut ellipse_color_resource: ResMut<EllipseColor>,
     mut experiment_background_color: ResMut<ExperimentBackgroundColor>,
     mut fixation_background_color: ResMut<FixationBackgroundColor>,
+    mut current_drawing_method: ResMut<CurrentDrawingMethod>,
 
 
 ) {
@@ -97,6 +101,15 @@ pub fn display_instruction_system(
                 ui.label("FIXATION BG COLOR:");
                 color_picker_widget(ui, &mut fixation_background_color.0);
             });
+            ui.label(format!("Current drawing method: {:?}", current_drawing_method.0));
+            if ui.button("Next drawing method").clicked() {
+                current_drawing_method.0 = match current_drawing_method.0 {
+                    DrawingMethod::Uniform => DrawingMethod::Grid,
+                    DrawingMethod::Grid => DrawingMethod::Uniform, 
+                };
+            }
+
+    
 
         });
     }

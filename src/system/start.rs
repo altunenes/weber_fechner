@@ -8,6 +8,7 @@ use crate::state::experiment::MinEllipse;
 use crate::state::experiment::MaxEllipse;
 use crate::state::experiment::TrialState;
 use crate::state::experiment::EllipseColor;
+use crate::state::experiment::CurrentDrawingMethod;
 
 use crate::setup::setup;
 
@@ -26,6 +27,7 @@ pub fn start_experiment_system(
     min_ellipse: Res<MinEllipse>,
     max_ellipse: Res<MaxEllipse>,
     ellipse_color_resource: ResMut<EllipseColor>,
+    current_drawing_method: Res<CurrentDrawingMethod>,
 ) {
     if *app_state == AppState::Instruction && keys.just_pressed(KeyCode::Return) {
         *app_state = AppState::Experiment;
@@ -33,7 +35,7 @@ pub fn start_experiment_system(
             commands.entity(entity).despawn();
         }
         trial_state.start_time = Instant::now(); 
-        setup(commands, meshes, materials, experiment_state,radius,min_ellipse,max_ellipse,ellipse_color_resource);    
+        setup(commands, meshes, materials, experiment_state,radius,min_ellipse,max_ellipse,ellipse_color_resource,current_drawing_method);    
     }
 }
 

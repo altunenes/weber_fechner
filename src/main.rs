@@ -18,6 +18,8 @@ use state::experiment::FixationTimer;
 use state::experiment::EllipseColor;
 use crate::state::experiment::ExperimentBackgroundColor;
 use crate::state::experiment::FixationBackgroundColor;
+use crate::state::experiment::DrawingMethod;
+use crate::state::experiment::CurrentDrawingMethod;
 
 
 
@@ -52,6 +54,7 @@ fn main() {
         .add_plugins(EguiPlugin)
         .insert_resource(AppState::Instruction)
         .insert_resource(ExperimentState::default())
+        .insert_resource(DrawingMethod::Uniform)
         .insert_resource(TotalTrial::default())
         .insert_resource(Radius::default())
         .insert_resource(MinEllipse::default())
@@ -59,6 +62,7 @@ fn main() {
         .insert_resource(TrialState::default()) 
         .insert_resource(FixationTimer::default())
         .insert_resource(EllipseColor::default())
+        .insert_resource(CurrentDrawingMethod::default())
         .insert_resource(ExperimentBackgroundColor::default())
         .insert_resource(FixationBackgroundColor::default())
         .add_systems(Startup, setup_camera)

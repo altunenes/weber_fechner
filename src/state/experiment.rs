@@ -104,3 +104,18 @@ impl Default for FixationBackgroundColor {
         FixationBackgroundColor(Color::GRAY)
     }
 }
+
+#[derive(Debug,Clone,Copy,Resource)]
+#[allow(dead_code)]
+pub enum DrawingMethod{
+    Uniform,
+    Grid,
+}
+
+#[derive(Debug,Resource)]
+pub struct CurrentDrawingMethod(pub DrawingMethod);
+impl Default for CurrentDrawingMethod {
+    fn default() -> Self {
+        CurrentDrawingMethod(DrawingMethod::Uniform)
+    }
+}
