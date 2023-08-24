@@ -218,6 +218,43 @@ DrawingMethod::Gaussian => {
         }).insert(Ellipse);
     }
 },
+
+DrawingMethod::Phyllotaxis => {
+    let golden_angle = 137.5_f32.to_radians();
+    let distance = 15.0;
+
+    let generate_positions = |num_ellipses, x_offset| {
+        let mut positions = Vec::new();
+        for i in 0..num_ellipses {
+            let theta = i as f32 * golden_angle;
+            let r = distance * (i as f32).sqrt();
+            let pos_x = x_offset + r * theta.cos();
+            let pos_y = r * theta.sin();
+            positions.push((pos_x, pos_y));
+        }
+        positions
+    };
+
+    let left_positions = generate_positions(num_ellipses_1, x);
+    let right_positions = generate_positions(num_ellipses_2, x_2);
+    for (pos_x, pos_y) in left_positions {
+        commands.spawn(MaterialMesh2dBundle {
+            mesh: meshes.add(shape::Circle::new(radius.0).into()).into(),
+            material: materials.add(ColorMaterial::from(ellipse_color_resource.0)),
+            transform: Transform::from_translation(Vec3::new(pos_x, pos_y, 0.)),
+            ..default()
+        }).insert(Ellipse);
+    }
+
+    for (pos_x, pos_y) in right_positions {
+        commands.spawn(MaterialMesh2dBundle {
+            mesh: meshes.add(shape::Circle::new(radius.0).into()).into(),
+            material: materials.add(ColorMaterial::from(ellipse_color_resource.0)),
+            transform: Transform::from_translation(Vec3::new(pos_x, pos_y, 0.)),
+            ..default()
+        }).insert(Ellipse);
+    }
+},
     }
     
     experiment_state.ellipses_drawn = true;

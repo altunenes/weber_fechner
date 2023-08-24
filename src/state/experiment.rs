@@ -113,6 +113,7 @@ pub enum DrawingMethod{
     Circular,
     Spiral,
     Gaussian,
+    Phyllotaxis
 }
 
 #[derive(Debug,Resource)]

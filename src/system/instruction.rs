@@ -108,7 +108,8 @@ pub fn display_instruction_system(
                     DrawingMethod::Grid => DrawingMethod::Circular,
                     DrawingMethod::Circular => DrawingMethod::Spiral,
                     DrawingMethod::Spiral => DrawingMethod::Gaussian,
-                    DrawingMethod::Gaussian => DrawingMethod::Uniform,
+                    DrawingMethod::Gaussian => DrawingMethod::Phyllotaxis,
+                    DrawingMethod::Phyllotaxis => DrawingMethod::Uniform,
                 };
             }
 
