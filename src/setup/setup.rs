@@ -102,6 +102,48 @@ pub fn setup(
         }).insert(Ellipse);
     }
 },
+DrawingMethod::Circular => {
+    let circle_spacing = 2.0 * radius.0 + 10.0;
+    let generate_positions = |num_ellipses, x_offset| {
+        let mut positions = Vec::new();
+        let mut current_radius = circle_spacing;
+        while positions.len() < num_ellipses {
+            let circumference = 2.0 * std::f32::consts::PI * current_radius;
+            let num_ellipses_at_this_radius = (circumference / circle_spacing).floor() as usize;
+            for i in 0..num_ellipses_at_this_radius {
+                if positions.len() >= num_ellipses {
+                    break;
+                }
+                let angle = i as f32 * (2.0 * std::f32::consts::PI / num_ellipses_at_this_radius as f32);
+                let pos_x = x_offset + current_radius * angle.cos();
+                let pos_y = current_radius * angle.sin();
+                positions.push((pos_x, pos_y));
+            }
+
+            current_radius += circle_spacing;
+        }
+        positions
+    };
+    let left_positions = generate_positions(num_ellipses_1, x);
+    let right_positions = generate_positions(num_ellipses_2, x_2);
+    for (pos_x, pos_y) in left_positions {
+        commands.spawn(MaterialMesh2dBundle {
+            mesh: meshes.add(shape::Circle::new(radius.0).into()).into(),
+            material: materials.add(ColorMaterial::from(ellipse_color_resource.0)),
+            transform: Transform::from_translation(Vec3::new(pos_x, pos_y, 0.)),
+            ..default()
+        }).insert(Ellipse);
+    }
+    for (pos_x, pos_y) in right_positions {
+        commands.spawn(MaterialMesh2dBundle {
+            mesh: meshes.add(shape::Circle::new(radius.0).into()).into(),
+            material: materials.add(ColorMaterial::from(ellipse_color_resource.0)),
+            transform: Transform::from_translation(Vec3::new(pos_x, pos_y, 0.)),
+            ..default()
+        }).insert(Ellipse);
+    }
+},
+
     }
     
     experiment_state.ellipses_drawn = true;

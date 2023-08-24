@@ -105,7 +105,8 @@ pub fn display_instruction_system(
             if ui.button("Next drawing method").clicked() {
                 current_drawing_method.0 = match current_drawing_method.0 {
                     DrawingMethod::Uniform => DrawingMethod::Grid,
-                    DrawingMethod::Grid => DrawingMethod::Uniform, 
+                    DrawingMethod::Grid => DrawingMethod::Circular,
+                    DrawingMethod::Circular => DrawingMethod::Uniform,
                 };
             }
 

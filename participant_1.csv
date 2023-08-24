@@ -1,12 +1,13 @@
 Trial,Num_Left,Num_Right,Result,Response_Time
-1,27,33,Incorrect,1.2534385
-2,26,91,Incorrect,0.9464429
-3,27,14,Correct,1.026752
-4,42,69,Incorrect,1.3501678
-5,65,61,Correct,1.1001527
+1,55,40,Correct,2.8746963
+2,98,12,Correct,1.4263531
+3,85,67,Correct,1.2934803
+4,31,93,Incorrect,1.4530232
+5,57,83,Incorrect,1.3066739
 
-Mean Accuracy: 0.4
-Mean Correct Response Time: 1.0634524
+Mean Accuracy: 0.6
+Mean Correct Response Time: 1.8648432
+.0634524
 ,29,15,Correct,0.8334007
 9,55,62,Incorrect,0.97062963
 10,31,66,Incorrect,0.8660494

@@ -110,6 +110,7 @@ impl Default for FixationBackgroundColor {
 pub enum DrawingMethod{
     Uniform,
     Grid,
+    Circular,
 }
 
 #[derive(Debug,Resource)]
