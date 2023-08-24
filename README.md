@@ -37,4 +37,4 @@ you can modify the number of trials, ellipse radius, or min_max values of distri
 
 ## Contribution
 - Feel free to contribute to the project. I am open to any suggestions. Please open an issue if you have any questions or suggestions etc.
-=======
+
