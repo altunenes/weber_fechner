@@ -144,6 +144,44 @@ DrawingMethod::Circular => {
     }
 },
 
+DrawingMethod::Spiral => {
+    let a = 0.0;
+    let b = 2.0;
+    let generate_positions = |num_ellipses, x_offset| {
+        let mut positions = Vec::new();
+        let mut theta: f32 = 0.0;
+        let step = 0.5;
+        while positions.len() < num_ellipses {
+            let r = a + b * theta;
+            let pos_x = x_offset + r * theta.cos();
+            let pos_y = r * theta.sin();
+            positions.push((pos_x, pos_y));
+            theta += step;
+        }
+        positions
+    };
+
+    let left_positions = generate_positions(num_ellipses_1, x);
+    let right_positions = generate_positions(num_ellipses_2, x_2);
+    for (pos_x, pos_y) in left_positions {
+        commands.spawn(MaterialMesh2dBundle {
+            mesh: meshes.add(shape::Circle::new(radius.0).into()).into(),
+            material: materials.add(ColorMaterial::from(ellipse_color_resource.0)),
+            transform: Transform::from_translation(Vec3::new(pos_x, pos_y, 0.)),
+            ..default()
+        }).insert(Ellipse);
+    }
+
+    for (pos_x, pos_y) in right_positions {
+        commands.spawn(MaterialMesh2dBundle {
+            mesh: meshes.add(shape::Circle::new(radius.0).into()).into(),
+            material: materials.add(ColorMaterial::from(ellipse_color_resource.0)),
+            transform: Transform::from_translation(Vec3::new(pos_x, pos_y, 0.)),
+            ..default()
+        }).insert(Ellipse);
+    }
+},
+
     }
     
     experiment_state.ellipses_drawn = true;

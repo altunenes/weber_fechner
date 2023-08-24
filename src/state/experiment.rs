@@ -111,6 +111,7 @@ pub enum DrawingMethod{
     Uniform,
     Grid,
     Circular,
+    Spiral,
 }
 
 #[derive(Debug,Resource)]
