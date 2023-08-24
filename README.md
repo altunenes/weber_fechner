@@ -30,4 +30,4 @@ that's it!
 
 you can modify the number of trials, ellipse radius, or min_max values of distributions before the experiment.
 
-![image](https://github.com/altunenes/weber_fechner/assets/54986652/7d03a34a-7081-40a9-8f25-29d04dc83ec1)
+![image](https://github.com/altunenes/weber_fechner/assets/54986652/b139cd13-72e6-4ed2-a3aa-ec8a1432433e)
