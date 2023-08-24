@@ -20,7 +20,7 @@ pub fn setup(
     min_ellipse: Res<MinEllipse>,
     max_ellipse: Res<MaxEllipse>,
     ellipse_color_resource: ResMut<EllipseColor>,
-    current_drawing_method: Res<CurrentDrawingMethod> // <-- Add this
+    current_drawing_method: Res<CurrentDrawingMethod> 
 ) {
     let mut rng = thread_rng();
     let x = -450.0;
@@ -54,15 +54,12 @@ pub fn setup(
             }
         },
         DrawingMethod::Grid => {
-    // Calculate the horizontal and vertical spacing between ellipses
-    let horizontal_spacing = 2.0 * radius.0 + 10.0; // 10 units of padding
-    let vertical_spacing = 2.0 * radius.0 + 10.0; // 10 units of padding
+    let horizontal_spacing = 2.0 * radius.0 + 10.0; 
+    let vertical_spacing = 2.0 * radius.0 + 10.0; 
 
-    // Calculate the number of ellipses we can fit in the horizontal and vertical directions
-    let max_ellipses_horizontal = (900.0 / horizontal_spacing).floor() as usize; // 900 is twice of 450 (half screen width)
-    let max_ellipses_vertical = (400.0 / vertical_spacing).floor() as usize; // 400 is twice of 200 (half screen height)
+    let max_ellipses_horizontal = (900.0 / horizontal_spacing).floor() as usize; 
+    let max_ellipses_vertical = (400.0 / vertical_spacing).floor() as usize; 
 
-    // Generate the positions for the left ellipses
     let mut left_positions = Vec::new();
     'left_loop: for i in 0..max_ellipses_horizontal {
         for j in 0..max_ellipses_vertical {
@@ -70,12 +67,11 @@ pub fn setup(
                 break 'left_loop;
             }
             let pos_x = x + i as f32 * horizontal_spacing;
-            let pos_y = -200.0 + j as f32 * vertical_spacing; // Start from -200 to center the grid vertically
+            let pos_y = -200.0 + j as f32 * vertical_spacing;
             left_positions.push((pos_x, pos_y));
         }
     }
 
-    // Generate the positions for the right ellipses
     let mut right_positions = Vec::new();
     'right_loop: for i in 0..max_ellipses_horizontal {
         for j in 0..max_ellipses_vertical {
@@ -83,12 +79,11 @@ pub fn setup(
                 break 'right_loop;
             }
             let pos_x = x_2 + i as f32 * horizontal_spacing;
-            let pos_y = -200.0 + j as f32 * vertical_spacing; // Start from -200 to center the grid vertically
+            let pos_y = -200.0 + j as f32 * vertical_spacing;
             right_positions.push((pos_x, pos_y));
         }
     }
 
-    // Spawn the left ellipses
     for (pos_x, pos_y) in left_positions {
         commands.spawn(MaterialMesh2dBundle {
             mesh: meshes.add(shape::Circle::new(radius.0).into()).into(),
@@ -98,7 +93,6 @@ pub fn setup(
         }).insert(Ellipse);
     }
 
-    // Spawn the right ellipses
     for (pos_x, pos_y) in right_positions {
         commands.spawn(MaterialMesh2dBundle {
             mesh: meshes.add(shape::Circle::new(radius.0).into()).into(),
