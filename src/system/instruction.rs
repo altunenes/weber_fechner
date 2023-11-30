@@ -39,7 +39,7 @@ pub fn display_instruction_system(
         };
         let text_alignment = TextAlignment::Center;
         commands.spawn(Text2dBundle {
-            text: Text::from_section("Wellcome =) \n\n\
+            text: Text::from_section("Wellcome :-) \n\n\
             this project is currently under development this is just a short demo to check if everything is working fine. 
 
             Instructions:
@@ -52,7 +52,7 @@ pub fn display_instruction_system(
 
             Press 'Enter' to start the experiment.
 
-            Please make sure you are in full screen mode.
+            Please make sure you are in full screen mode. You will get results after the experiment is finished.
 
             questions/comments: enesaltun2@gmail.com            
             ", text_style)
@@ -77,7 +77,7 @@ pub fn display_instruction_system(
             ui.horizontal(|ui| {
                 ui.label("MIN_ELLIPSE:");
                 let mut min_ellipse_value = min_ellipse.0 as f32;
-                egui::Slider::new(&mut min_ellipse_value, 1.0..=10.0).ui(ui);
+                egui::Slider::new(&mut min_ellipse_value, 1.0..=100.0).ui(ui);
                 min_ellipse.0 = min_ellipse_value as usize;
             });
 
